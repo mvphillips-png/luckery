@@ -301,6 +301,8 @@
     color: var(--accent); cursor: pointer; transition: all 0.12s ease;
   }
   .sketch .dev-btn:hover { background: var(--accent); color: var(--dark-text); }
+  .sketch .dev-btn.opened { border-style: dashed; opacity: 0.7; }
+  .sketch-hint { font-size: 13px; color: rgba(255,251,232,0.5); margin: -6px 0 14px; }
 
   /* ── ACTION BUTTONS ── */
   .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; align-items: center; }
@@ -374,7 +376,7 @@
             <span class="opt-big">Flaws are their superpowers. You don't have to be perfect to be lucky.</span>
           </span>
         </button>
-        <textarea class="opt-idea" id="ideaMisfits" maxlength="300"
+        <textarea class="opt-idea" id="ideaMisfits" maxlength="600"
           placeholder="Your Lucky Misfit idea… e.g. luck for first days · a pencil that's always too short · a button that never fits its hole"></textarea>
         <div class="opt-off-note" id="noteMisfits"></div>
       </div>
@@ -388,7 +390,7 @@
             <span class="opt-big">Strange, symbolic creatures from science, nature, folklore and ordinary things.</span>
           </span>
         </button>
-        <textarea class="opt-idea" id="ideaPersp" maxlength="300"
+        <textarea class="opt-idea" id="ideaPersp" maxlength="600"
           placeholder="Your Perspective Maker idea… e.g. gravity · lichen · the dust in a sunbeam · the underside of a fallen leaf"></textarea>
         <div class="opt-off-note" id="notePersp"></div>
       </div>
@@ -1097,18 +1099,57 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     job.status = 'done';
     job.el.innerHTML = sketchesHTML(job);
     job.el.querySelectorAll('.dev-btn').forEach((btn, i) => {
-      btn.addEventListener('click', () => developSketch(job.key, job.sketches[i]));   // closure, not data-attributes
+      btn.addEventListener('click', () => {                                   // closure, not data-attributes
+        const opened = openSketchInNewTab(job.key, job.sketches[i]);
+        if (opened) { btn.textContent = 'Opened in new tab ✓'; btn.classList.add('opened'); }
+        else developSketch(job.key, job.sketches[i]);                          // pop-up blocked: develop here instead
+      });
     });
+  }
+
+  function sketchIdea(s) {
+    return `Develop this sketch: ${s.name} — ${s.luck_for}. ${s.quick} ${s.hook ? 'Hook: ' + s.hook + '.' : ''} ${s.look ? 'Look: ' + s.look + '.' : ''} ${s.line ? 'Line: ' + s.line + '.' : ''} Keep the name ${s.name}.`.replace(/\s+/g, ' ').trim();
+  }
+
+  // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
+  // carrying over the current settings. The sketch list stays put in this tab.
+  function openSketchInNewTab(key, s) {
+    const payload = { key, idea: sketchIdea(s), madeFor: state.madeFor, forText: $('forText').value.trim(), inspo: state.inspo, web: state.web };
+    const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
+    const w = window.open(url, '_blank');
+    return !!w;
   }
 
   function developSketch(key, s) {
     setMode('full');
     setOn('misfits', key === 'misfits');
     setOn('persp', key === 'persp');
-    const box = $(key === 'misfits' ? 'ideaMisfits' : 'ideaPersp');
-    box.value = `Develop this sketch: ${s.name} — ${s.luck_for}. ${s.quick} ${s.hook ? 'Hook: ' + s.hook + '.' : ''} ${s.look ? 'Look: ' + s.look + '.' : ''} Keep the name ${s.name}.`.replace(/\s+/g, ' ').trim();
+    $(key === 'misfits' ? 'ideaMisfits' : 'ideaPersp').value = sketchIdea(s);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(generate, 350);
+  }
+
+  // A tab opened by "Develop this one": restore the settings, fill the idea, and build it.
+  function startFromHash() {
+    const m = location.hash.match(/^#develop=(.+)$/);
+    if (!m) return;
+    let p; try { p = JSON.parse(decodeURIComponent(m[1])); } catch (e) { return; }
+    history.replaceState(null, '', location.href.split('#')[0]);   // a refresh won't re-run it
+    if (!p || !COLLECTIONS[p.key]) return;
+    setMode('full');
+    setOn('misfits', p.key === 'misfits');
+    setOn('persp', p.key === 'persp');
+    $(p.key === 'misfits' ? 'ideaMisfits' : 'ideaPersp').value = String(p.idea || '').slice(0, 600);
+    if (p.madeFor) {
+      state.madeFor = p.madeFor;
+      document.querySelectorAll('#forGrid .pill-btn').forEach(x => x.classList.toggle('active', x.dataset.for === p.madeFor));
+    }
+    $('forText').value = p.forText || '';
+    state.inspo = Array.isArray(p.inspo) ? p.inspo : [];
+    document.querySelectorAll('#inspoGrid .pill-btn').forEach(x => x.classList.toggle('active', state.inspo.includes(x.dataset.inspo)));
+    if (typeof p.web === 'boolean' && p.web !== state.web) $('webBtn').click();
+    updateNotes();
+    generate();
   }
 
   /* ════════════════════════════════════════════════════
@@ -1231,6 +1272,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     const C = COLLECTIONS[job.key];
     return `<section class="charm-sheet ${C.cls}" id="sheet-${job.key}">
       <div class="sketch-head">${C.emoji} Five ${esc(C.label)} to choose from</div>
+      <div class="sketch-hint">Each “Develop this one” opens in its own tab — this list stays right here.</div>
       <div class="sketch-grid">${job.sketches.map(s => `<div class="sketch">
         <div class="sk-name">${esc(s.name)}</div>
         <div class="sk-luck">${esc(s.luck_for)}</div>
@@ -1238,7 +1280,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         ${s.hook ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Helps you see' : 'Flaw → superpower'}</b>${esc(s.hook)}</div>` : ''}
         ${s.look ? `<div class="sk-line"><b>Look</b>${esc(s.look)}</div>` : ''}
         ${s.line ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Lucky thought' : 'Lucky ritual'}</b>${esc(s.line)}</div>` : ''}
-        <button class="dev-btn" type="button">Develop this one →</button>
+        <button class="dev-btn" type="button">Develop this one ↗</button>
       </div>`).join('')}</div>
     </section>`;
   }
@@ -1619,6 +1661,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   $('txtBtn').addEventListener('click', downloadTxt);
   $('pdfBtn').addEventListener('click', downloadPDF);
   updateNotes();
+  startFromHash();
 </script>
 </body>
 </html>
