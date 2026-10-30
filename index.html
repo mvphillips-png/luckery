@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mascot Charm Generator | Lucky Misfits · Perspective Makers</title>
+<title>Knickknocks Generator | Lucky Misfits · Perspective Makers</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&family=Boogaloo&display=swap" rel="stylesheet">
 <!-- jsPDF: draws the PDF as real text (same library + version as CITYSCOPE and Seeds & Worms) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -345,7 +345,7 @@
   <div class="top-badge"><span>🍀 Lucky Misfits · Perspective Makers</span></div>
 
   <div class="hero-title">
-    <span class="line1">MASCOT CHARM</span>
+    <span class="line1">KNICKKNOCKS</span>
     <span class="line2">GENERATOR</span>
   </div>
   <p class="hero-tagline">Strange little creatures. Remarkably good intentions.</p>
@@ -355,7 +355,7 @@
 
   <!-- ════════ INPUT CARD ════════ -->
   <div class="main-card">
-    <div class="card-eyebrow">Build a good-luck charm to draw</div>
+    <div class="card-eyebrow">Build a Knickknock to draw</div>
 
     <div class="mode-row" id="modeRow">
       <button class="pill-btn dark active" data-mode="full">✦ Full Charm</button>
@@ -431,7 +431,7 @@
       </div>
     </div>
 
-    <button class="generate-btn" id="generateBtn">🍀 MAKE THE CHARM! 🍀</button>
+    <button class="generate-btn" id="generateBtn">🍀 MAKE A KNICKKNOCK! 🍀</button>
     <div class="error-box" id="errorBox"></div>
   </div>
 
@@ -455,7 +455,7 @@
 
   <div class="site-footer">
     <span class="footer-tagline">You don't have to be perfect to be lucky.</span><br>
-    Mascot Charm Generator · <a href="https://quirkyflashchronicles.com" target="_blank" rel="noopener">Quirky Flash Chronicles</a> · Studio Bits of Gravity<br>
+    Knickknocks Generator · <a href="https://quirkyflashchronicles.com" target="_blank" rel="noopener">Quirky Flash Chronicles</a> · Studio Bits of Gravity<br>
     MVANNP
   </div>
 
@@ -532,7 +532,7 @@
   /* ════════════════════════════════════════════════════
      PROMPTS
      ════════════════════════════════════════════════════ */
-  const COMMON = `You are designing an ORIGINAL good-luck mascot ("charm") for Morgan Phillips (signature MVANNP), a cartoonist and illustrator who will DRAW it by hand. Your job is the concept and a drawing brief — not the drawing.
+  const COMMON = `You are designing an ORIGINAL good-luck mascot — a Knickknock — for Morgan Phillips (signature MVANNP), a cartoonist and illustrator who will DRAW it by hand. Your job is the concept and a drawing brief — not the drawing. The Knickknocks (knickknack + knock on wood) are Morgan's family of keepsake-sized good-luck creatures; every one belongs to either the Lucky Misfits or the Perspective Makers. Never use "Knickknock" as the creature's own name.
 
 Morgan's style: modern folk art + cartoon humor + a fascination with science and ordinary things. Handmade, slightly uneven, full of personality. Characters must read without any language — a child anywhere in the world should get it from the picture alone.
 
@@ -1296,7 +1296,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
 
   function allText() {
     const parts = state.jobs.filter(j => j.charm).map(charmText);
-    return 'MASCOT CHARM GENERATOR · Quirky Flash Chronicles · MVANNP\n' + new Date().toLocaleDateString() + '\n\n' + parts.join('\n\n\n');
+    return 'KNICKKNOCKS GENERATOR · Quirky Flash Chronicles · MVANNP\n' + new Date().toLocaleDateString() + '\n\n' + parts.join('\n\n\n');
   }
 
   function copyText() {
@@ -1312,7 +1312,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
 
   function fileBase() {
     const names = state.jobs.filter(j => j.charm).map(j => pdfSlug(j.charm.name));
-    return 'charm-' + (names.join('-') || 'mascot') + '-' + pdfDateStamp();
+    return 'knickknock-' + (names.join('-') || 'charm') + '-' + pdfDateStamp();
   }
 
   function downloadTxt() {
@@ -1446,7 +1446,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     const A = persp ? C.teal : C.orange;
     if (!first) K.newPage();
     K.y = M + 4;
-    K.font('mono', 8.5, C.teal); P.text('QUIRKY FLASH CHRONICLES  ·  MASCOT CHARM  ·  ' + pdfSafe(COLLECTIONS[job.key].label).toUpperCase(), M, K.y + 7); K.y += 28;
+    K.font('mono', 8.5, C.teal); P.text('QUIRKY FLASH CHRONICLES  ·  KNICKKNOCK  ·  ' + pdfSafe(COLLECTIONS[job.key].label).toUpperCase(), M, K.y + 7); K.y += 28;
     K.para(c.name.toUpperCase(), { size: 34, style: 'bold', rgb: C.yellow, lh: 38 });
     if (c.pronunciation) { K.font('mono', 9, C.muted); P.text('say it: ' + pdfSafe(c.pronunciation), M, K.y + 6); K.y += 16; }
     if (c.luck_for) { K.para(c.luck_for.toUpperCase(), { size: 12.5, style: 'bold', rgb: A, lh: 17 }); }
@@ -1534,7 +1534,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     const C = PDF_THEMES[paper] || PDF_THEMES.dark;
     const K = pdfBegin(C);
     jobs.forEach((job, i) => pdfCharm(K, job, i === 0));
-    K.footer('MASCOT CHARM GENERATOR  ·  QUIRKY FLASH CHRONICLES  ·  STUDIO BITS OF GRAVITY  ·  MVANNP');
+    K.footer('KNICKKNOCKS GENERATOR  ·  QUIRKY FLASH CHRONICLES  ·  STUDIO BITS OF GRAVITY  ·  MVANNP');
     return K.P;
   }
 
@@ -1569,7 +1569,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     const both = state.on.misfits && state.on.persp;
     $('generateBtn').textContent = state.mode === 'quick'
       ? '✎ SKETCH ' + (both ? 'BOTH COLLECTIONS' : 'FIVE IDEAS') + ' ✎'
-      : (both ? '🍀 MAKE BOTH CHARMS! 🍀' : '🍀 MAKE THE CHARM! 🍀');
+      : (both ? '🍀 MAKE BOTH KNICKKNOCKS! 🍀' : '🍀 MAKE A KNICKKNOCK! 🍀');
   }
   function setMode(mode) {
     state.mode = mode;
