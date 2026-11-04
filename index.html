@@ -651,14 +651,16 @@ QUALITY BAR:
 - No resemblance to existing characters (any Pokemon, Kumamon, Funassyi, Hello Kitty and Sanrio, Rilakkuma, Sumikko Gurashi, Moomins, Totoro, Kirby, Smurfs, Care Bears, Muppets, One Piece characters, etc.) — learn from the style, never copy. A name must not be a famous name with a letter changed.
 
 NAMING — THE MOST IMPORTANT DETAIL. People CALL their charm out loud with a short affirmation, so every name must pass the say-it-out-loud test:
-  Lucky Misfit:      "Knock knock, Muddle Pin-Pin, pin me some hill-climbing luck!"
-  Perspective Maker: "Knock knock, Peek Nib-Nib, flip me a fresh look at test day!"
-A name has two parts:
-1. KNOWN-FOR WORD: one plain, real English word (1-2 syllables) for what it's known for. For a Lucky Misfit, its flaw or quirk (Muddle, Dawdle, Fumble, Sleepy, Wobble, Soggy, Grumble). For a Perspective Maker, its way of seeing (Peek, Tilt, Squint, Flip, Wonder, Glimmer).
-2. CALL NAME: a short, picturable sound from its base, said like two knocks on wood — the same beat twice (Pin-Pin, Tock-Tock, Nib-Nib, Perk-Perk) or a pair with a changed vowel or a rhyme (Jingle-Jangle, Drip-Drop, Sunny-Bun). Each half 1-2 syllables. Hearing it, you picture the thing.
-Full name = known-for word + call name: "Muddle Pin-Pin", "Dawdle Tock-Tock", "Fumble Jing-Jing". Spelled exactly as it sounds; 3-5 syllables in all.
-NOT allowed: Pokemon-style blended words (no "Quizzard"), invented nonsense sounds (no "Tunnick", "Mazzle"), "-son" endings, or anything close to a brand or common phrase (no "Tick-Tock", "Ping-Pong", "Hip-Hop").
-CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Pin-Pin pins, Tock-Tock ticks, Perk-Perk brews, Jing-Jing jingles, Nib-Nib writes, Peek flips or peeks).
+  Lucky Misfit:      "Knock knock, Pinnik, pin me some hill-climbing luck!"
+  Perspective Maker: "Knock knock, Prismnik, flip me a fresh look at test day!"
+THE -NIK NAME: every Knickknock's name is ONE word = a ROOT + "nik". ("-nik" comes from Knick, the first growth stage: "a little one from the Lucky Cabinet" — it marks every charm as part of the same family.)
+- The ROOT is one short, real, picturable word for the thing it's made from or the sound it makes — hear it and you see it: Pin, Tock, Perk, Nib, Jingle, Acorn, Sock, Snail, Drip, Toast.
+- Keep the root whole and add "nik", so it's spelled exactly as it sounds: Pin -> Pinnik, Tock -> Tocknik, Perk -> Perknik, Nib -> Nibnik, Jingle -> Jinglenik.
+- 2-3 syllables in all. Capitalize only the first letter.
+- NOT allowed: real "-nik" words (Sputnik, beatnik, peacenik, nudnik, refusenik, neatnik, no-goodnik, kibbutznik, folknik), roots that are brands or famous characters, invented nonsense roots, Pokemon-style blended roots.
+- If the name is in the NAMES ALREADY USED list, pick a different root first (another part of the thing: Tocknik -> Chimenik -> Snoozenik).
+"known_for" is a separate single word for what it's known for (its flaw or way of seeing), used only as a tie-breaker in front of the name if two charms ever share a name.
+CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Pinnik pins, Tocknik ticks, Perknik brews, Jinglenik jingles, Nibnik writes, Prismnik flips).
 - Plain, warm English. Short sentences. Facts must be true; if unsure, put it in second_look.`;
 
   const COLLECTION_BRIEF = {
@@ -734,10 +736,10 @@ ${researchBlock(research)}
 
 Return ONLY this JSON (no code fences, no other text):
 {
- "known_for": "e.g. Muddle",
- "call_name": "e.g. Pin-Pin",
- "name": "known-for word + call name, e.g. Muddle Pin-Pin",
- "pronunciation": "e.g. MUD-ul PIN-pin",
+ "root": "the picturable root word, e.g. Pin",
+ "name": "root + nik, e.g. Pinnik",
+ "pronunciation": "e.g. PIN-nik",
+ "known_for": "one word for what it's known for, e.g. Muddy (tie-breaker only)",
  "call_verb": "its one-word verb, e.g. pin",
  ${persp ? '"look_tag": "what the person wants a fresh look at, 2-4 words, e.g. test day"' : '"luck_tag": "2-3 words that go before the word luck, e.g. hill-climbing"'},
  "charm_title": "The ___ Charm",
@@ -766,7 +768,7 @@ Return ONLY this JSON (no code fences, no other text):
  },
  "look": "short sketch note, 2-3 sentences: the base, the shape, the signature feature",
  "palette": [{"name":"","hex":"#rrggbb"}],
- "alt_names": ["3 alternate full names in the same two-part format"],
+ "alt_names": ["3 alternate -nik names with different roots"],
  "real_roots": [{"fact":"the true fact it's built on","inspires":"what it shaped","src":"url or empty"}],
  "second_look": ["anything Morgan should double-check"]
 }
@@ -789,14 +791,14 @@ ${avoidLine()}
 QUICK SKETCH MODE: give 5 rough, DIFFERENT Knickknocks for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : ', and spread them across the Nooks that fit'}.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"known-for word + call name, e.g. Muddle Pin-Pin","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"2-3 words before the word luck'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"root + nik, e.g. Pinnik","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"2-3 words before the word luck'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(job, c) {
     const names = [c.name].concat(c.alt_names || []).filter(Boolean).slice(0, 4);
     return `Quick screen: are these invented character names already used by well-known characters, mascots, toys, games, children's books, or brands?
 Names: ${names.join(', ')}
-Context: an original good-luck character — ${c.charm_title || ''}: "${c.quick}". Check the full name and the call name (${c.call_name || ''}) on its own.
+Context: an original good-luck character — ${c.charm_title || ''}: "${c.quick}". Also check the root word (${c.root || ''}) as a character name.
 
 Use web search (at most 3 searches; you may check several names in one search). Return ONLY this JSON:
 {"results":[{"name":"","status":"clear|similar|taken","found":"what you found, one sentence; empty if clear","url":""}],"best":"the strongest name that is clear","note":"one sentence"}
@@ -929,6 +931,14 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const list = v => Array.isArray(v) ? v.filter(x => x != null && x !== '') : (v ? (typeof v === 'string' ? v.split(/\n+/).map(s => s.replace(/^[-•*\d.\s]+/, '').trim()).filter(Boolean) : [v]) : []);
   const strList = v => list(v).map(str).filter(Boolean);
 
+  // Every name is ROOT + "nik" (Pin -> Pinnik). Tidies capitalization and adds "nik" if it's missing.
+  function nikName(n) {
+    n = String(n || '').trim().split(/\s+/).pop().replace(/[^A-Za-z'-]/g, '');
+    if (!n) return '';
+    if (!/nik$/i.test(n)) n = n + 'nik';
+    return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+  }
+
   // The affirmation people say to call their charm. Built here so the shape is always the same.
   function callingLine(c, key) {
     const name = c.name || 'Knickknock', verb = (c.verb || 'knock').toLowerCase().replace(/[^a-z' -]/g, '').trim() || 'knock';
@@ -949,8 +959,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     return {
       key,
       known_for: str(pick(d, ['known_for', 'knownFor', 'epithet'])),
-      call_name: str(pick(d, ['call_name', 'callName'])),
-      name: str(pick(d, ['name', 'charm_name'])) || [str(pick(d, ['known_for'])), str(pick(d, ['call_name']))].filter(Boolean).join(' ') || 'Unnamed Charm',
+      root: str(pick(d, ['root', 'root_word'])),
+      name: nikName(str(pick(d, ['name', 'charm_name'])) || str(pick(d, ['root', 'root_word']))) || 'Unnamed Charm',
       verb: str(pick(d, ['call_verb', 'verb', 'callVerb'])),
       tag: str(pick(d, key === 'persp' ? ['look_tag', 'luck_tag', 'tag'] : ['luck_tag', 'look_tag', 'tag'])),
       pronunciation: str(pick(d, ['pronunciation', 'say_it'])),
@@ -1081,6 +1091,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   }
 
   async function runFull(job) {
+    const usedBefore = recentNames().map(n => n.toLowerCase());
     const C = COLLECTIONS[job.key];
     // PASS 1 — research with web search. If it fails, the charm still gets written (and says so).
     if (state.web) {
@@ -1118,6 +1129,10 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     }
     clearInterval(job.timer);
     job.charm = normCharm(res.data, job.key);
+    if (usedBefore.includes(job.charm.name.toLowerCase()) && job.charm.known_for) {
+      job.charm.name = job.charm.known_for.charAt(0).toUpperCase() + job.charm.known_for.slice(1).toLowerCase().split(/\s+/)[0] + ' ' + job.charm.name;   // tie-breaker: "Steady Tocknik"
+    }
+    job.charm.alt_names = job.charm.alt_names.map(nikName).filter(Boolean);
     job.charm.calling = callingLine(job.charm, job.key);
     // Only links to sites the research actually visited are kept as sources.
     job.charm.real_roots.forEach(r => { if (!research || (r.src && !research.seen.has(domainOf(r.src)))) r.src = ''; });
@@ -1153,6 +1168,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   }
 
   async function runQuick(job) {
+    const usedBefore = recentNames().map(n => n.toLowerCase());
     setStep(job, 'Sketching five ' + COLLECTIONS[job.key].label, STEP_MSGS.quick);
     const body = { model: MODEL, max_tokens: TOKENS.quick, messages: [{ role: 'user', content: quickPrompt(job) }] };
     const good = d => list(d.sketches).length > 0;
@@ -1161,13 +1177,14 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     catch (e1) { res = await askJSON(e1.timeout ? Object.assign({}, body, { model: FALLBACK_MODEL }) : body, good); }
     clearInterval(job.timer);
     job.sketches = list(res.data.sketches).map(s => ({
-      name: str(pick(s, ['name'])), charm_title: str(pick(s, ['charm_title', 'title'])),
+      name: nikName(str(pick(s, ['name']))), charm_title: str(pick(s, ['charm_title', 'title'])),
       nook: nookBy(pick(s, ['nook'])) || nookBy(state.nook) || NOOKS[4],
       quick: str(pick(s, ['quick', 'one_liner'])), hook: str(pick(s, ['hook', 'flaw', 'perspective'])),
       look: str(pick(s, ['look', 'base'])), move: str(pick(s, ['move', 'signature_move'])), line: str(pick(s, ['line', 'ritual', 'thought'])),
       verb: str(pick(s, ['call_verb', 'verb'])), tag: str(pick(s, job.key === 'persp' ? ['look_tag', 'luck_tag'] : ['luck_tag', 'look_tag']))
     })).filter(s => s.name);
     job.sketches.forEach(s => { s.calling = callingLine(s, job.key); });
+    job.sketches.forEach(s => { s.repeat = usedBefore.includes(s.name.toLowerCase()); });
     rememberNames(job.sketches.map(s => s.name));
     job.status = 'done';
     job.el.innerHTML = sketchesHTML(job);
@@ -1338,7 +1355,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       <div class="sketch-head">${C.emoji} Five ${esc(C.label)} for “${esc(job.need)}”</div>
       <div class="sketch-hint">Each “Develop this one” opens in its own tab — this list stays right here.</div>
       <div class="sketch-grid">${job.sketches.map(s => `<div class="sketch">
-        <div class="sk-name">${esc(s.name)}</div>
+        <div class="sk-name">${esc(s.name)}${s.repeat ? ' <span class="badge b-warn">name used before</span>' : ''}</div>
         <div class="sk-luck">${esc(s.charm_title)}</div>
         <div class="sk-call">“${esc(s.calling)}”</div>
         <div class="sk-line"><b>Nook</b>${s.nook.emoji} ${esc(s.nook.name)} (${esc(s.nook.code)})</div>
