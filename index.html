@@ -535,15 +535,15 @@
 
   // ── THE LUCKY CABINET: nine Nooks in a 3×3 grid, addressed by the lucky numbers 3, 4, 9 ──
   const NOOKS = [
-    { code: '33', end: 'beam', name: 'Window Nook',   emoji: '🪟', short: 'sky · seeing differently', luck: 'weather, the sky, seeing things differently' },
-    { code: '34', end: 'puff', name: 'Pillow Nook',   emoji: '🛏', short: 'sleep · worries',          luck: 'sleep, dreams, worries, bad days' },
-    { code: '39', end: 'tock', name: 'Clock Nook',    emoji: '⏰', short: 'late · waiting',           luck: 'being late, waiting, patience, deadlines' },
-    { code: '43', end: 'bun', name: 'Kettle Nook',   emoji: '☕', short: 'coffee · mornings',        luck: 'coffee, cooking, mornings, food' },
-    { code: '44', end: 'nik', name: 'Junk Nook',     emoji: '🗃', short: 'the crossroads',           luck: 'everything that fits nowhere else; the busy crossroads at the center of the Cabinet, where Lucky Misfits gather' },
-    { code: '49', end: 'kin', name: 'Pocket Nook',   emoji: '👛', short: 'lost things · remembering', luck: 'lost keys, remembering things, small treasures' },
-    { code: '93', end: 'step', name: 'Doorstep Nook', emoji: '🚪', short: 'new starts · travel',      luck: 'new starts, travel, friends, getting home safe' },
-    { code: '94', end: 'ling', name: 'Garden Nook',   emoji: '🌱', short: 'growing · pets',           luck: 'growing, late bloomers, pets, patience with yourself' },
-    { code: '99', end: 'nib', name: 'Desk Nook',     emoji: '✏️', short: 'school · work',            luck: 'school, tests, work, big ideas' }
+    { code: '33', ends: ['beam', 'glow', 'peek'], name: 'Window Nook',   emoji: '🪟', short: 'sky · seeing differently', luck: 'weather, the sky, seeing things differently' },
+    { code: '34', ends: ['nod', 'doze', 'snug', 'hush'], name: 'Pillow Nook',   emoji: '🛏', short: 'sleep · worries',          luck: 'sleep, dreams, worries, bad days' },
+    { code: '39', ends: ['tock', 'tick', 'chime'], name: 'Clock Nook',    emoji: '⏰', short: 'late · waiting',           luck: 'being late, waiting, patience, deadlines' },
+    { code: '43', ends: ['bun', 'perk', 'crumb', 'brew'], name: 'Kettle Nook',   emoji: '☕', short: 'coffee · mornings',        luck: 'coffee, cooking, mornings, food' },
+    { code: '44', ends: ['nik', 'bit', 'odd'], name: 'Junk Nook',     emoji: '🗃', short: 'the crossroads',           luck: 'everything that fits nowhere else; the busy crossroads at the center of the Cabinet, where Lucky Misfits gather' },
+    { code: '49', ends: ['clink', 'tuck', 'keep', 'stash'], name: 'Pocket Nook',   emoji: '👛', short: 'lost things · remembering', luck: 'lost keys, remembering things, small treasures' },
+    { code: '93', ends: ['step', 'hop', 'latch'], name: 'Doorstep Nook', emoji: '🚪', short: 'new starts · travel',      luck: 'new starts, travel, friends, getting home safe' },
+    { code: '94', ends: ['ling', 'sprout', 'bloom'], name: 'Garden Nook',   emoji: '🌱', short: 'growing · family · pets', luck: 'growing, late bloomers, family and the people you love, pets, patience with yourself' },
+    { code: '99', ends: ['nib', 'doodle', 'dot'], name: 'Desk Nook',     emoji: '✏️', short: 'school · work',            luck: 'school, tests, work, big ideas' }
   ];
   const nookBy = v => {
     const t = String(v || '').toLowerCase();
@@ -653,16 +653,18 @@ QUALITY BAR:
 NAMING — THE MOST IMPORTANT DETAIL. People CALL their charm out loud with a short affirmation, so every name must pass the say-it-out-loud test:
   Lucky Misfit:      "Knock knock, Snapnib, snap me some speak-up luck!"
   Perspective Maker: "Knock knock, Prismbeam, flip me a fresh look at test day!"
-THE NOOK NAME: every Knickknock's name is ONE word = a ROOT + its NOOK'S ENDING. Hear the ending and you know where it lives:
-${NOOKS.map(n => `  ${n.code} ${n.name}: -${n.end}`).join('\n')}
-  Examples: Snapnib (Desk), Keykin (Pocket), Perkbun (Kettle), Snoozetock (Clock), Sproutling (Garden), Mapstep (Doorstep), Prismbeam (Window), Yawnpuff (Pillow), Twistnik (Junk).
-- The ROOT is one short, real, picturable word for the thing it's made from or the sound it makes. It must match what you actually SEE: a horseshoe is "Clop" or "Horseshoe", never "Shoe" (that pictures a shoe); a pencil is "Nib" or "Scribble".
+THE NOOK NAME: every Knickknock's name is ONE word = a ROOT + one of its NOOK'S ENDINGS. Each Nook has a small family of endings that sound like that Nook — hear the ending and you can tell where it lives:
+${NOOKS.map(n => `  ${n.code} ${n.name}: ${n.ends.map(e => '-' + e).join(', ')}`).join('\n')}
+  Examples: Snapnib, Bugdoodle (Desk) · Keyclink, Pennytuck (Pocket) · Toastbun, Mugperk (Kettle) · Snoozetock, Dawnchime (Clock) · Acornling, Seedbloom (Garden) · Mapstep, Boothop (Doorstep) · Prismbeam, Cloudpeek (Window) · Bobnod, Wishdoze (Pillow) · Twistnik, Buttonbit (Junk).
+- Pick the ending from its Nook's family that sounds best when said out loud with the root.
+- The ending MUST come from the family of the Nook in the "nook" field.
+- The ROOT is one short, real, picturable word for the thing it's made from or the sound it makes. It must match what you actually SEE: a horseshoe is "Clop", never "Shoe" (that pictures a shoe); a pencil is "Nib" or "Scribble".
 - Keep the root whole and add the ending, so it's spelled exactly as it sounds. 2-3 syllables in all. Capitalize only the first letter.
-- The ending MUST match the Nook in the "nook" field.
-- NOT allowed: a root + ending that makes a real word or a famous name (Sunbeam, Napkin, Pumpkin, Bumpkin, Footstep, Doorstep, Duckling, Sapling, Earling, Bugling, Sputnik, Beatnik, Hotcross-bun...), roots that are brands or famous characters, invented nonsense roots, Pokemon-style blended roots.
-- If the name is in the NAMES ALREADY USED list, pick a different root first (another part of the thing: Snapnib -> Wishnib -> Chirpnib).
+- NOT allowed: a root + ending that makes a real word or a famous name (Sunbeam, Lipstick, Footstep, Doorstep, Duckling, Sapling, Bugling, Sputnik, Beatnik, Hotdot, Wingnut...), roots that are brands or famous characters, invented nonsense roots, Pokemon-style blended roots.
+- If the name is in the NAMES ALREADY USED list, pick a different root or a different ending from the same family.
 "known_for" is a separate single word for what it's known for (its flaw or way of seeing), used only as a tie-breaker in front of the name if two charms ever share a name.
-CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Snapnib snaps, Snoozetock ticks, Perkbun brews, Keykin jingles, Prismbeam flips).
+CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Snapnib snaps, Snoozetock ticks, Mugperk brews, Keyclink jingles, Prismbeam flips).
+LUCK WORDS: in the call, the luck words name a clear kind of luck in 1-3 plain words — "good-news luck", "winning luck", "on-time luck", "found-it luck", "speak-up luck". Never a phrase or instruction (not "pull it close luck", not "bigger half luck").
 - Plain, warm English. Short sentences. Facts must be true; if unsure, put it in second_look.`;
 
   const COLLECTION_BRIEF = {
@@ -685,7 +687,7 @@ The LUCKY THOUGHT is the headline takeaway.`
   }
   function nookLine() {
     const n = NOOKS.find(x => x.code === state.nook);
-    return n ? `NOOK: it lives in the ${n.code} ${n.name}.` : 'NOOK: choose the Nook whose kind of luck matches the need (work, school, meetings, tests and ideas -> 99 Desk Nook; lateness and waiting -> 39 Clock Nook; coffee and mornings -> 43 Kettle Nook; new starts, travel and friends -> 93 Doorstep Nook; and so on). Use the 44 Junk Nook ONLY when no other Nook fits at all.';
+    return n ? `NOOK: it lives in the ${n.code} ${n.name}.` : 'NOOK: choose the Nook whose kind of luck matches the need (work, school, meetings, tests and ideas -> 99 Desk Nook; lateness and waiting -> 39 Clock Nook; coffee and mornings -> 43 Kettle Nook; new starts, travel and friends -> 93 Doorstep Nook; family, children and the people you love -> 94 Garden Nook; worries and sleep -> 34 Pillow Nook; and so on). Use the 44 Junk Nook ONLY when no other Nook fits at all.';
   }
   const inspoLine = () => state.inspo.length ? `LEAN ON THESE INSPIRATION SOURCES for its base: ${state.inspo.join(', ')}.` : 'INSPIRATION: your choice — pick the most surprising fit.';
   const avoidLine = () => { const n = recentNames(); return n.length ? `NAMES ALREADY USED (do not reuse or echo): ${n.join(', ')}.` : ''; };
@@ -739,11 +741,11 @@ ${researchBlock(research)}
 Return ONLY this JSON (no code fences, no other text):
 {
  "root": "the picturable root word, e.g. Pin",
- "name": "root + its Nook's ending, e.g. Snapnib",
+ "name": "root + an ending from its Nook's family, e.g. Snapnib",
  "pronunciation": "e.g. SNAP-nib",
  "known_for": "one word for what it's known for, e.g. Muddy (tie-breaker only)",
  "call_verb": "its one-word verb, e.g. pin",
- ${persp ? '"look_tag": "what the person wants a fresh look at, 2-4 words, e.g. test day"' : '"luck_tag": "2-3 words that go before the word luck, e.g. hill-climbing"'},
+ ${persp ? '"look_tag": "the situation to see freshly, 2-4 plain words, e.g. test day"' : '"luck_tag": "1-3 plain words naming the kind of luck (goes before the word luck), e.g. good-news, winning, hill-climbing"'},
  "charm_title": "The ___ Charm",
  "nook": "two-digit Nook code, e.g. 39",
  "quick": "What it does, one sentence under 20 words.",
@@ -770,7 +772,7 @@ Return ONLY this JSON (no code fences, no other text):
  },
  "look": "short sketch note, 2-3 sentences: the base, the shape, the signature feature",
  "palette": [{"name":"","hex":"#rrggbb"}],
- "alt_names": ["3 alternate names: different roots, same Nook ending"],
+ "alt_names": ["3 alternate names: different roots, endings from the same Nook family"],
  "real_roots": [{"fact":"the true fact it's built on","inspires":"what it shaped","src":"url or empty"}],
  "second_look": ["anything Morgan should double-check"]
 }
@@ -790,10 +792,10 @@ ${nookLine()}
 ${inspoLine()}
 ${avoidLine()}
 
-QUICK SKETCH MODE: give 5 rough, DIFFERENT Knickknocks for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook, so the names end differently'}. Each name uses the ending of ITS OWN Nook.
+QUICK SKETCH MODE: give 5 rough, DIFFERENT Knickknocks for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Each name uses an ending from ITS OWN Nook's family, and charms in the same Nook use DIFFERENT endings from that family.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"root + its own Nook's ending, e.g. Snapnib","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"2-3 words before the word luck'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"root + an ending from its own Nook's family, e.g. Snapnib","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(job, c) {
@@ -933,18 +935,23 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const list = v => Array.isArray(v) ? v.filter(x => x != null && x !== '') : (v ? (typeof v === 'string' ? v.split(/\n+/).map(s => s.replace(/^[-•*\d.\s]+/, '').trim()).filter(Boolean) : [v]) : []);
   const strList = v => list(v).map(str).filter(Boolean);
 
-  // Every name is ROOT + its Nook's ending (Snap + Desk Nook -> Snapnib).
-  // Tidies capitalization and fixes the ending if the model used another Nook's ending or none.
-  const NOOK_ENDS = NOOKS.map(n => n.end).sort((a, b) => b.length - a.length);
-  function nookName(n, nook) {
+  // Every name is ROOT + an ending from its Nook's family (Snap + Desk Nook -> Snapnib / Snapdoodle / Snapdot).
+  // Keeps any ending from the right family; if the model used another Nook's ending (or none), swaps in one
+  // from the right family, preferring one not already used in this batch.
+  const ALL_ENDS = Array.from(new Set(NOOKS.flatMap(n => n.ends))).sort((a, b) => b.length - a.length);
+  function nookName(n, nook, usedEnds) {
     n = String(n || '').trim().split(/\s+/).pop().replace(/[^A-Za-z'-]/g, '');
     if (!n) return '';
-    const end = (nook && nook.end) || 'nik';
-    const low = n.toLowerCase();
-    if (!low.endsWith(end)) {
-      const other = NOOK_ENDS.find(e => low.endsWith(e) && low.length - e.length >= 2);
-      n = (other ? n.slice(0, n.length - other.length) : n) + end;
+    const ends = (nook && nook.ends) || ['nik'];
+    let low = n.toLowerCase();
+    let end = ends.slice().sort((a, b) => b.length - a.length).find(e => low.endsWith(e) && low.length - e.length >= 2);
+    if (!end) {
+      const other = ALL_ENDS.find(e => low.endsWith(e) && low.length - e.length >= 2);
+      if (other) n = n.slice(0, n.length - other.length);
+      end = ends.find(e => !(usedEnds && usedEnds.has(e))) || ends[0];
+      n = n + end;
     }
+    if (usedEnds) usedEnds.add(end);
     return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
   }
 
@@ -1192,7 +1199,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       look: str(pick(s, ['look', 'base'])), move: str(pick(s, ['move', 'signature_move'])), line: str(pick(s, ['line', 'ritual', 'thought'])),
       verb: str(pick(s, ['call_verb', 'verb'])), tag: str(pick(s, job.key === 'persp' ? ['look_tag', 'luck_tag'] : ['luck_tag', 'look_tag']))
     })).filter(s => s.rawName);
-    job.sketches.forEach(s => { s.name = nookName(s.rawName, s.nook) || 'Unnamed'; s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
+    const usedEnds = {};
+    job.sketches.forEach(s => { s.name = nookName(s.rawName, s.nook, usedEnds[s.nook.code] || (usedEnds[s.nook.code] = new Set())) || 'Unnamed'; s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
     rememberNames(job.sketches.map(s => s.name));
     job.status = 'done';
     job.el.innerHTML = sketchesHTML(job);
@@ -1703,7 +1711,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       : 'Faster. Real roots come from general knowledge (flagged “verify”), and there’s no name check.';
   }
 
-  $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${n.short} · -${n.end}</small></button>`).join('');
+  $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${n.short}<br>${n.ends.map(e => '-' + e).join(' · ')}</small></button>`).join('');
   document.querySelectorAll('#nookGrid .nook-btn').forEach(b => b.addEventListener('click', () => setNook(state.nook === b.dataset.code ? '' : b.dataset.code)));
   $('nookAny').addEventListener('click', () => setNook(''));
   document.querySelectorAll('.opt-card').forEach(card => {
