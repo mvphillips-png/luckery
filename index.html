@@ -651,19 +651,19 @@ QUALITY BAR:
 - No resemblance to existing characters (any Pokemon, Kumamon, Funassyi, Hello Kitty and Sanrio, Rilakkuma, Sumikko Gurashi, Moomins, Totoro, Kirby, Smurfs, Care Bears, Muppets, One Piece characters, etc.) — learn from the style, never copy. A name must not be a famous name with a letter changed.
 
 NAMING — THE MOST IMPORTANT DETAIL. People CALL their charm out loud with a short affirmation, so every name must pass the say-it-out-loud test:
-  Lucky Misfit:      "Knock knock, Snapnib, snap me some speak-up luck!"
-  Perspective Maker: "Knock knock, Prismbeam, flip me a fresh look at test day!"
-THE NOOK NAME: every Knickknock's name is ONE word = a ROOT + one of its NOOK'S ENDINGS. Each Nook has a small family of endings that sound like that Nook — hear the ending and you can tell where it lives:
-${NOOKS.map(n => `  ${n.code} ${n.name}: ${n.ends.map(e => '-' + e).join(', ')}`).join('\n')}
-  Examples: Snapnib, Bugdoodle (Desk) · Keyclink, Pennytuck (Pocket) · Toastbun, Mugperk (Kettle) · Snoozetock, Dawnchime (Clock) · Acornling, Seedbloom (Garden) · Mapstep, Boothop (Doorstep) · Prismbeam, Cloudpeek (Window) · Bobnod, Wishdoze (Pillow) · Twistnik, Buttonbit (Junk).
-- Pick the ending from its Nook's family that sounds best when said out loud with the root.
-- The ending MUST come from the family of the Nook in the "nook" field.
-- The ROOT is one short, real, picturable word for the thing it's made from or the sound it makes. It must match what you actually SEE: a horseshoe is "Clop", never "Shoe" (that pictures a shoe); a pencil is "Nib" or "Scribble".
-- Keep the root whole and add the ending, so it's spelled exactly as it sounds. 2-3 syllables in all. Capitalize only the first letter.
-- NOT allowed: a root + ending that makes a real word or a famous name (Sunbeam, Lipstick, Footstep, Doorstep, Duckling, Sapling, Bugling, Sputnik, Beatnik, Hotdot, Wingnut...), roots that are brands or famous characters, invented nonsense roots, Pokemon-style blended roots.
-- If the name is in the NAMES ALREADY USED list, pick a different root or a different ending from the same family.
-"known_for" is a separate single word for what it's known for (its flaw or way of seeing), used only as a tie-breaker in front of the name if two charms ever share a name.
-CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Snapnib snaps, Snoozetock ticks, Mugperk brews, Keyclink jingles, Prismbeam flips).
+  Lucky Misfit:      "Knock knock, Owlways, hoot me some watched-over luck!"
+  Perspective Maker: "Knock knock, Aceorn, flip me a fresh look at test day!"
+LUCK-PUN NAMES: the name SOUNDS LIKE the good thing the charm brings — the way Japan's lucky owl, "fukurou", sounds like "luck comes" and "no hardship". One word that lets you hear TWO things at once:
+  (a) the picturable thing it IS (owl, pin, key, acorn, clock, mug...) and
+  (b) a word or phrase for the LUCK it brings (always, happen, keeper, ace, all good...).
+  Examples: Owlways (owl + always: always watching) · Happin (happen + pin: good things happen) · Keyper (key + keeper) · Aceorn (ace + acorn) · Tickety (tickety-boo, "all good", for an alarm clock).
+- Say it out loud: the pun must be heard instantly, without explaining it.
+- Spelled so a 7-year-old can read it; bend spelling only as much as the pun needs. 2-3 syllables, about 9 letters or fewer.
+- You must be able to picture the thing AND hear the luck.
+- NOT allowed: names that only describe (no "Hootpeek", "Perchbeam"), invented nonsense, Pokemon-style animal+element blends, "-son" endings, the Nook's name, existing brands or famous characters, and puns that need a footnote.
+- If the name is in the NAMES ALREADY USED list, find a different pun.
+- "pun" spells out what the name combines, e.g. "owl + always".
+CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Owlways hoots, Happin pins, Keyper jingles, Aceorn flips, Tickety ticks).
 LUCK WORDS: in the call, the luck words name a clear kind of luck in 1-3 plain words — "good-news luck", "winning luck", "on-time luck", "found-it luck", "speak-up luck". Never a phrase or instruction (not "pull it close luck", not "bigger half luck").
 - Plain, warm English. Short sentences. Facts must be true; if unsure, put it in second_look.`;
 
@@ -740,10 +740,9 @@ ${researchBlock(research)}
 
 Return ONLY this JSON (no code fences, no other text):
 {
- "root": "the picturable root word, e.g. Pin",
- "name": "root + an ending from its Nook's family, e.g. Snapnib",
- "pronunciation": "e.g. SNAP-nib",
- "known_for": "one word for what it's known for, e.g. Muddy (tie-breaker only)",
+ "name": "the luck-pun name, e.g. Owlways",
+ "pun": "what the name combines, e.g. owl + always",
+ "pronunciation": "e.g. OWL-ways",
  "call_verb": "its one-word verb, e.g. pin",
  ${persp ? '"look_tag": "the situation to see freshly, 2-4 plain words, e.g. test day"' : '"luck_tag": "1-3 plain words naming the kind of luck (goes before the word luck), e.g. good-news, winning, hill-climbing"'},
  "charm_title": "The ___ Charm",
@@ -772,7 +771,7 @@ Return ONLY this JSON (no code fences, no other text):
  },
  "look": "short sketch note, 2-3 sentences: the base, the shape, the signature feature",
  "palette": [{"name":"","hex":"#rrggbb"}],
- "alt_names": ["3 alternate names: different roots, endings from the same Nook family"],
+ "alt_names": ["3 alternate luck-pun names"],
  "real_roots": [{"fact":"the true fact it's built on","inspires":"what it shaped","src":"url or empty"}],
  "second_look": ["anything Morgan should double-check"]
 }
@@ -792,17 +791,17 @@ ${nookLine()}
 ${inspoLine()}
 ${avoidLine()}
 
-QUICK SKETCH MODE: give 5 rough, DIFFERENT Knickknocks for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Each name uses an ending from ITS OWN Nook's family, and charms in the same Nook use DIFFERENT endings from that family.
+QUICK SKETCH MODE: give 5 rough, DIFFERENT Knickknocks for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Every name is a luck-pun name, and all five puns are different.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"root + an ending from its own Nook's family, e.g. Snapnib","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"luck-pun name, e.g. Owlways","pun":"e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(job, c) {
     const names = [c.name].concat(c.alt_names || []).filter(Boolean).slice(0, 4);
     return `Quick screen: are these invented character names already used by well-known characters, mascots, toys, games, children's books, or brands?
 Names: ${names.join(', ')}
-Context: an original good-luck character — ${c.charm_title || ''}: "${c.quick}". Also check the root word (${c.root || ''}) as a character name.
+Context: an original good-luck character — ${c.charm_title || ''}: "${c.quick}". 
 
 Use web search (at most 3 searches; you may check several names in one search). Return ONLY this JSON:
 {"results":[{"name":"","status":"clear|similar|taken","found":"what you found, one sentence; empty if clear","url":""}],"best":"the strongest name that is clear","note":"one sentence"}
@@ -935,24 +934,12 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const list = v => Array.isArray(v) ? v.filter(x => x != null && x !== '') : (v ? (typeof v === 'string' ? v.split(/\n+/).map(s => s.replace(/^[-•*\d.\s]+/, '').trim()).filter(Boolean) : [v]) : []);
   const strList = v => list(v).map(str).filter(Boolean);
 
-  // Every name is ROOT + an ending from its Nook's family (Snap + Desk Nook -> Snapnib / Snapdoodle / Snapdot).
-  // Keeps any ending from the right family; if the model used another Nook's ending (or none), swaps in one
-  // from the right family, preferring one not already used in this batch.
-  const ALL_ENDS = Array.from(new Set(NOOKS.flatMap(n => n.ends))).sort((a, b) => b.length - a.length);
-  function nookName(n, nook, usedEnds) {
-    n = String(n || '').trim().split(/\s+/).pop().replace(/[^A-Za-z'-]/g, '');
+  // Luck-pun names (Owlways, Happin, Keyper): one word, first letter capitalized.
+  function tidyName(n) {
+    n = String(n || '').trim().replace(/^the\s+/i, '').replace(/[^A-Za-z' -]/g, '').replace(/\s+/g, ' ').trim();
     if (!n) return '';
-    const ends = (nook && nook.ends) || ['nik'];
-    let low = n.toLowerCase();
-    let end = ends.slice().sort((a, b) => b.length - a.length).find(e => low.endsWith(e) && low.length - e.length >= 2);
-    if (!end) {
-      const other = ALL_ENDS.find(e => low.endsWith(e) && low.length - e.length >= 2);
-      if (other) n = n.slice(0, n.length - other.length);
-      end = ends.find(e => !(usedEnds && usedEnds.has(e))) || ends[0];
-      n = n + end;
-    }
-    if (usedEnds) usedEnds.add(end);
-    return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+    if (n.split(' ').length > 2) n = n.split(' ').slice(0, 2).join(' ');
+    return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 
   // The affirmation people say to call their charm. Built here so the shape is always the same.
@@ -976,7 +963,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       key,
       known_for: str(pick(d, ['known_for', 'knownFor', 'epithet'])),
       root: str(pick(d, ['root', 'root_word'])),
-      name: nookName(str(pick(d, ['name', 'charm_name'])) || str(pick(d, ['root', 'root_word'])), nook) || 'Unnamed Charm',
+      name: tidyName(str(pick(d, ['name', 'charm_name']))) || 'Unnamed Charm',
+      pun: str(pick(d, ['pun', 'pun_note', 'name_meaning'])),
       verb: str(pick(d, ['call_verb', 'verb', 'callVerb'])),
       tag: str(pick(d, key === 'persp' ? ['look_tag', 'luck_tag', 'tag'] : ['luck_tag', 'look_tag', 'tag'])),
       pronunciation: str(pick(d, ['pronunciation', 'say_it'])),
@@ -1033,7 +1021,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     let need = $('needInput').value.trim(), surprise = false;
     if (!need) { need = drawNeed(); surprise = true; }   // both charms share the same surprise need
     return ['misfits', 'persp'].filter(k => state.on[k]).map(key => ({
-      key, need, surprise, develop: state.develop, mode: state.mode, status: 'pending',
+      key, need, surprise, develop: state.develop, devName: state.devName, mode: state.mode, status: 'pending',
       charm: null, sketches: null, research: null, webNote: '', names: null, namesState: 'none', note: ''
     }));
   }
@@ -1045,7 +1033,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     state.running = true;
     $('generateBtn').disabled = true;
     state.jobs = makeJobs();
-    state.develop = '';   // a sketch hand-off is used once
+    state.develop = ''; state.devName = '';   // a sketch hand-off is used once
     $('sheets').innerHTML = '';
     $('outError').style.display = 'none';
     $('actionRow').style.display = 'none';
@@ -1145,10 +1133,9 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     }
     clearInterval(job.timer);
     job.charm = normCharm(res.data, job.key);
-    if (usedBefore.includes(job.charm.name.toLowerCase()) && job.charm.known_for) {
-      job.charm.name = job.charm.known_for.charAt(0).toUpperCase() + job.charm.known_for.slice(1).toLowerCase().split(/\s+/)[0] + ' ' + job.charm.name;   // tie-breaker: "Steady Tocknik"
-    }
-    job.charm.alt_names = job.charm.alt_names.map(a => nookName(a, job.charm.nook)).filter(Boolean);
+    // A repeat is flagged, never renamed. A developed sketch keeps its own name (that's not a repeat).
+    job.charm.repeat = usedBefore.includes(job.charm.name.toLowerCase()) && job.charm.name.toLowerCase() !== (job.devName || '').toLowerCase();
+    job.charm.alt_names = job.charm.alt_names.map(tidyName).filter(Boolean);
     job.charm.calling = callingLine(job.charm, job.key);
     // Only links to sites the research actually visited are kept as sources.
     job.charm.real_roots.forEach(r => { if (!research || (r.src && !research.seen.has(domainOf(r.src)))) r.src = ''; });
@@ -1193,14 +1180,13 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     catch (e1) { res = await askJSON(e1.timeout ? Object.assign({}, body, { model: FALLBACK_MODEL }) : body, good); }
     clearInterval(job.timer);
     job.sketches = list(res.data.sketches).map(s => ({
-      rawName: str(pick(s, ['name'])), charm_title: str(pick(s, ['charm_title', 'title'])),
+      rawName: str(pick(s, ['name'])), pun: str(pick(s, ['pun'])), charm_title: str(pick(s, ['charm_title', 'title'])),
       nook: nookBy(pick(s, ['nook'])) || nookBy(state.nook) || NOOKS[4],
       quick: str(pick(s, ['quick', 'one_liner'])), hook: str(pick(s, ['hook', 'flaw', 'perspective'])),
       look: str(pick(s, ['look', 'base'])), move: str(pick(s, ['move', 'signature_move'])), line: str(pick(s, ['line', 'ritual', 'thought'])),
       verb: str(pick(s, ['call_verb', 'verb'])), tag: str(pick(s, job.key === 'persp' ? ['look_tag', 'luck_tag'] : ['luck_tag', 'look_tag']))
     })).filter(s => s.rawName);
-    const usedEnds = {};
-    job.sketches.forEach(s => { s.name = nookName(s.rawName, s.nook, usedEnds[s.nook.code] || (usedEnds[s.nook.code] = new Set())) || 'Unnamed'; s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
+    job.sketches.forEach(s => { s.name = tidyName(s.rawName) || 'Unnamed'; s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
     rememberNames(job.sketches.map(s => s.name));
     job.status = 'done';
     job.el.innerHTML = sketchesHTML(job);
@@ -1214,19 +1200,19 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   }
 
   function sketchText(s) {
-    return `${s.name} — ${s.charm_title}, ${s.nook.code} ${s.nook.name}. Call: ${s.calling} ${s.quick} ${s.hook ? 'Hook: ' + s.hook + '.' : ''} ${s.look ? 'Look: ' + s.look + '.' : ''} ${s.move ? 'Move: ' + s.move + '.' : ''} ${s.line ? 'Line: ' + s.line + '.' : ''}`.replace(/\s+/g, ' ').trim();
+    return `${s.name}${s.pun ? ' (' + s.pun + ')' : ''} — ${s.charm_title}, ${s.nook.code} ${s.nook.name}. Call: ${s.calling} ${s.quick} ${s.hook ? 'Hook: ' + s.hook + '.' : ''} ${s.look ? 'Look: ' + s.look + '.' : ''} ${s.move ? 'Move: ' + s.move + '.' : ''} ${s.line ? 'Line: ' + s.line + '.' : ''}`.replace(/\s+/g, ' ').trim();
   }
 
   // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
   // carrying over the settings. The sketch list stays put in this tab.
   function openSketchInNewTab(job, s) {
-    const payload = { key: job.key, need: job.need, develop: sketchText(s), nook: s.nook.code, inspo: state.inspo, web: state.web };
+    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web };
     const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
     return !!window.open(url, '_blank');
   }
 
   function developSketch(job, s) {
-    applySettings({ key: job.key, need: job.need, develop: sketchText(s), nook: s.nook.code });
+    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code });
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(generate, 350);
   }
@@ -1237,6 +1223,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     setOn('persp', p.key === 'persp');
     $('needInput').value = String(p.need || '').slice(0, 300);
     state.develop = String(p.develop || '').slice(0, 700);
+    state.devName = String(p.devName || '').slice(0, 40);
     setNook(p.nook && NOOKS.some(n => n.code === p.nook) ? p.nook : '');
     if (Array.isArray(p.inspo)) {
       state.inspo = p.inspo;
@@ -1291,7 +1278,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         ${numRowHTML(job)}
         <div class="out-pill pill-accent" style="margin-top:8px">${C.emoji} ${esc(C.one)}</div>
         <div class="charm-name">${esc(c.name)}</div>
-        ${c.pronunciation ? `<div class="charm-pron">say it: ${esc(c.pronunciation)}</div>` : ''}
+        ${(c.pronunciation || c.pun) ? `<div class="charm-pron">${c.pronunciation ? 'say it: ' + esc(c.pronunciation) : ''}${c.pronunciation && c.pun ? ' · ' : ''}${c.pun ? esc(c.pun) : ''}</div>` : ''}
+        ${c.repeat ? '<div class="charm-pron"><span class="badge b-warn">name used before in this browser</span></div>' : ''}
         <div class="calling"><div class="calling-label">Call it · knock twice on wood</div>“${esc(c.calling)}”</div>
         ${c.charm_title ? `<div class="charm-title">${esc(c.charm_title)}</div>` : ''}
         <div class="charm-nook">${c.nook.emoji} Lives in the ${esc(c.nook.name)} (${esc(c.nook.code)})</div>
@@ -1372,6 +1360,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       <div class="sketch-hint">Each “Develop this one” opens in its own tab — this list stays right here.</div>
       <div class="sketch-grid">${job.sketches.map(s => `<div class="sketch">
         <div class="sk-name">${esc(s.name)}${s.repeat ? ' <span class="badge b-warn">name used before</span>' : ''}</div>
+        ${s.pun ? `<div class="sk-line" style="opacity:.75">${esc(s.pun)}</div>` : ''}
         <div class="sk-luck">${esc(s.charm_title)}</div>
         <div class="sk-call">“${esc(s.calling)}”</div>
         <div class="sk-line"><b>Nook</b>${s.nook.emoji} ${esc(s.nook.name)} (${esc(s.nook.code)})</div>
@@ -1401,7 +1390,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     L.push('No. ' + c.number + '   ' + c.name.toUpperCase() + (c.pronunciation ? '  (' + c.pronunciation + ')' : ''));
     L.push([c.charm_title, COLLECTIONS[job.key].one, c.nook.code + ' ' + c.nook.name].filter(Boolean).join(' · '));
     L.push('==============================');
-    add('Call it', c.calling); add('Need', job.need); add('', c.quick); add('Motto', c.motto); L.push('');
+    add('Name', c.pun); add('Call it', c.calling); add('Need', job.need); add('', c.quick); add('Motto', c.motto); L.push('');
     L.push('WHAT IT DOES'); c.what_it_does.forEach(p => L.push(p)); L.push('');
     if (persp) { add('The fresh perspective', c.perspective); add('What people miss', c.overlooked); }
     else { add('The flaw', c.flaw); add('Why the flaw is the superpower', c.superpower); }
@@ -1575,7 +1564,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     K.font('mono', 8.5, C.teal); P.text('KNICKKNOCKS  ·  ' + pdfSafe(COLLECTIONS[job.key].one).toUpperCase() + '  ·  ' + pdfSafe(c.nook.code + ' ' + c.nook.name).toUpperCase(), M, K.y + 7);
     K.font('monobold', 10, C.yellow); P.text('No. ' + pdfSafe(c.number), M + CW, K.y + 7, { align: 'right' }); K.y += 28;
     K.para(c.name.toUpperCase(), { size: 34, style: 'bold', rgb: C.yellow, lh: 38 });
-    if (c.pronunciation) { K.font('mono', 9, C.muted); P.text('say it: ' + pdfSafe(c.pronunciation), M, K.y + 6); K.y += 16; }
+    if (c.pronunciation || c.pun) { K.font('mono', 9, C.muted); P.text(pdfSafe([c.pronunciation ? 'say it: ' + c.pronunciation : '', c.pun].filter(Boolean).join('  ·  ')), M, K.y + 6); K.y += 16; }
     if (c.charm_title) K.para(c.charm_title.toUpperCase(), { size: 13, style: 'bold', rgb: A, lh: 18 });
     K.box('Call it  ·  knock twice on wood', '"' + c.calling + '"', C.yellow, { size: 13, style: 'bold' });
     K.y += 6; K.rule(C.pink, 1.2); K.y += 14;
@@ -1711,7 +1700,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       : 'Faster. Real roots come from general knowledge (flagged “verify”), and there’s no name check.';
   }
 
-  $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${n.short}<br>${n.ends.map(e => '-' + e).join(' · ')}</small></button>`).join('');
+  $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${n.short}</small></button>`).join('');
   document.querySelectorAll('#nookGrid .nook-btn').forEach(b => b.addEventListener('click', () => setNook(state.nook === b.dataset.code ? '' : b.dataset.code)));
   $('nookAny').addEventListener('click', () => setNook(''));
   document.querySelectorAll('.opt-card').forEach(card => {
