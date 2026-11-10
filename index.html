@@ -213,6 +213,20 @@
   .charm-luck { font-family: 'Fredoka One', cursive; font-size: 20px; color: var(--accent); margin-top: 8px; }
   .charm-quick { font-family: 'Boogaloo', cursive; font-size: 24px; line-height: 1.3; color: var(--cream); margin-top: 10px; }
   .charm-motto { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 14px; letter-spacing: 0.04em; color: var(--lime); margin-top: 10px; }
+  .draw-wrap { display: none; margin-bottom: 18px; }
+  .draw-drop {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: rgba(26,10,46,0.9); border: 3px dashed var(--yellow);
+    border-radius: 16px; padding: 14px 16px; color: var(--cream); cursor: pointer;
+  }
+  .draw-drop img { width: 96px; height: 96px; object-fit: contain; border-radius: 10px; background: #f3e3b3; display: none; }
+  .draw-drop .dd-text { flex: 1; min-width: 180px; font-size: 14px; line-height: 1.4; }
+  .draw-drop .dd-text b { font-family: 'Fredoka One', cursive; font-weight: normal; font-size: 17px; color: var(--yellow); display: block; }
+  .draw-file { display: none; }
+  .series-input { margin-bottom: 20px; }
+  .drawing-img { display: block; max-width: 100%; max-height: 360px; margin: 6px auto 14px; border-radius: 14px; background: #f3e3b3; box-shadow: 4px 4px 0 rgba(0,0,0,0.35); }
+  .seen-card { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+  .seen-card img { width: 180px; max-height: 240px; object-fit: contain; border-radius: 12px; background: #f3e3b3; }
+  .seen-card .seen-text { flex: 1; min-width: 220px; }
   .collector { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 10px; }
   .type-pill { font-family: 'Fredoka One', cursive; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 2px solid var(--lime); color: var(--lime); border-radius: 100px; padding: 3px 12px; }
   .move { font-family: 'Boogaloo', cursive; font-size: 17px; color: var(--cream); }
@@ -420,10 +434,20 @@
     <div class="mode-row" id="modeRow">
       <button class="pill-btn dark active" data-mode="full">✦ Full Charm</button>
       <button class="pill-btn dark" data-mode="quick">✎ Quick Sketches</button>
+      <button class="pill-btn dark" data-mode="draw">🖍 Name My Drawing</button>
     </div>
     <div class="mode-note" id="modeNote">One finished charm per collection — name, what it does, backstory, and how it grows.</div>
 
-    <div class="filter-label">What do you need luck with? <span class="hint">(or leave it blank and get surprised)</span></div>
+    <div class="draw-wrap" id="drawWrap">
+      <div class="filter-label">Your drawing</div>
+      <label class="draw-drop" for="drawFile">
+        <img id="drawThumb" alt="your drawing">
+        <span class="dd-text" id="drawText"><b>🖍 Tap to upload a drawing</b>JPG or PNG — a finished piece or a phone photo of a sketch. It stays on this page; nothing is saved.</span>
+      </label>
+      <input class="draw-file" id="drawFile" type="file" accept="image/*">
+    </div>
+
+    <div class="filter-label" id="needLabel">What do you need luck with? <span class="hint">(or leave it blank and get surprised)</span></div>
     <textarea class="need-input" id="needInput" maxlength="300"
       placeholder="e.g. always running late · keep the coffee fresh · have a great day · nervous about the SAT · losing my keys"></textarea>
 
@@ -454,11 +478,15 @@
 
     <hr class="card-rule">
 
+    <div class="filter-label">Series <span class="hint">(optional — a design family, like "Plant Pot". Typed fresh each time; nothing is saved)</span></div>
+    <input class="text-input series-input" id="seriesInput" type="text" maxlength="40" placeholder="e.g. Plant Pot" autocomplete="off">
+
     <div class="filter-label">Which Nook does it live in? <span class="hint">(the nine Nooks of the Lucky Cabinet)</span></div>
     <div class="nook-any"><button class="pill-btn dark active" id="nookAny" type="button">✦ Let it choose</button></div>
     <div class="nook-grid" id="nookGrid"></div>
     <div style="height:12px"></div>
 
+    <div id="inspoWrap">
     <div class="filter-label">Draw inspiration from <span class="hint">(pick any, or leave all off for a surprise mix)</span></div>
     <div class="filter-grid" id="inspoGrid">
       <button class="pill-btn purple" data-inspo="Animals">🦔 Animals</button>
@@ -471,6 +499,7 @@
       <button class="pill-btn purple" data-inspo="Kitchen & home">🫖 Kitchen &amp; home</button>
       <button class="pill-btn purple" data-inspo="Folklore & superstition">🧿 Folklore</button>
       <button class="pill-btn purple" data-inspo="Ocean & shore">🐚 Ocean &amp; shore</button>
+    </div>
     </div>
 
     <div id="webWrap">
@@ -558,6 +587,8 @@
     inspo: [],
     web: true,
     paper: 'dark',
+    series: '',          // optional design family; read from the box each run, never saved
+    drawing: null,       // { dataUrl, w, h } for Name My Drawing — lives only on this page
     develop: '',         // set when a tab is opened from "Develop this one"
     jobs: [],
     running: false
@@ -685,8 +716,12 @@ The LUCKY THOUGHT is the headline takeaway.`
     if (job.develop) t += `\nDEVELOP THIS SKETCH into the full charm (keep its name, Nook and idea): ${job.develop}`;
     return t;
   }
-  function nookLine() {
-    const n = NOOKS.find(x => x.code === state.nook);
+  function seriesLine() {
+    return state.series ? `SERIES: it belongs to the "${state.series}" series, a design family that runs alongside the Nooks. Every charm in this series shares that design idea, so keep its look, name and story clearly part of the "${state.series}" series.` : '';
+  }
+
+  function nookLine(job) {
+    const n = NOOKS.find(x => x.code === (state.nook || (job && job.nookCode)));
     return n ? `NOOK: it lives in the ${n.code} ${n.name}.` : 'NOOK: choose the Nook whose kind of luck matches the need (work, school, meetings, tests and ideas -> 99 Desk Nook; lateness and waiting -> 39 Clock Nook; coffee and mornings -> 43 Kettle Nook; new starts, travel and friends -> 93 Doorstep Nook; family, children and the people you love -> 94 Garden Nook; worries and sleep -> 34 Pillow Nook; and so on). Use the 44 Junk Nook ONLY when no other Nook fits at all.';
   }
   const inspoLine = () => state.inspo.length ? `LEAN ON THESE INSPIRATION SOURCES for its base: ${state.inspo.join(', ')}.` : 'INSPIRATION: your choice — pick the most surprising fit.';
@@ -695,7 +730,7 @@ The LUCKY THOUGHT is the headline takeaway.`
   function researchPrompt(job) {
     return `You are a research assistant for an illustrator designing an ORIGINAL good-luck character. Use web search to find REAL, verifiable material — you are not designing the character.
 
-The everyday need it helps with: "${job.need}"
+The everyday need it helps with: "${job.need}"${job.seen ? '\nThe character (from Morgan\'s drawing): ' + job.seen : ''}
 Kind of charm: ${COLLECTIONS[job.key].one} (${job.key === 'misfits' ? 'brings luck; its flaw is its superpower' : 'gives a fresh, true way of seeing the situation'})
 ${state.inspo.length ? 'Inspiration sources: ' + state.inspo.join(', ') : ''}
 
@@ -723,6 +758,15 @@ ${lines.join('\n') || '(searches found nothing usable — treat as no research)'
 ${crowded ? 'CROWDED TERRITORY — steer the design and name clear of: ' + crowded : ''}`;
   }
 
+  function drawingBlock(job) {
+    if (!job.image) return '';
+    return `MORGAN'S DRAWING (image attached): Morgan drew this character himself. It is the real design — build everything around it.
+- What it looks like (from the drawing): ${job.seen || 'see the image'}
+- Describe ONLY what is actually in the drawing in "look" and "knick" (shapes, colors, face, objects). Never invent features it doesn't have.
+- "knack" and "knock" are future forms: suggest them as natural grown-up versions of THIS drawing.
+- THE NAME IS ALREADY CHOSEN: "${job.chosen.name}"${job.chosen.pun ? ' (' + job.chosen.pun + ')' : ''}. Use exactly that name. Its luck: "${job.need}".`;
+  }
+
   function fullPrompt(job, research) {
     const persp = job.key === 'persp';
     return `${STYLE}
@@ -732,11 +776,14 @@ ${WORLD}
 ${COLLECTION_BRIEF[job.key]}
 
 ${needLine(job)}
-${nookLine()}
+${nookLine(job)}
+${seriesLine()}
 ${inspoLine()}
 ${avoidLine()}
 
 ${researchBlock(research)}
+
+${drawingBlock(job)}
 
 Return ONLY this JSON (no code fences, no other text):
 {
@@ -778,6 +825,33 @@ Return ONLY this JSON (no code fences, no other text):
 COUNTS: palette 3-4, alt_names 3, real_roots 1-3, second_look 0-3.`;
   }
 
+  function drawNamesPrompt(job) {
+    const pick = state.on.misfits && !state.on.persp ? 'misfits' : (state.on.persp && !state.on.misfits ? 'persp' : '');
+    return `${STYLE}
+
+${WORLD}
+
+${COLLECTION_BRIEF.misfits}
+
+${COLLECTION_BRIEF.persp}
+
+NAME MY DRAWING: Morgan drew this Knickknock himself (image attached) and hasn't named it yet.
+1. Look carefully. Describe ONLY what is actually in the drawing — shapes, colors, face, expression, objects, setting. Never invent features.
+2. ${job.need ? `The luck it's for (Morgan's words): "${job.need}".` : "Morgan doesn't know its luck yet. Read the drawing — its expression, body, objects and mood — and suggest the everyday need it is perfect for."}
+3. ${pick ? `Collection: ${COLLECTIONS[pick].one} (Morgan chose this).` : 'Collection: decide which fits the drawing better — Lucky Misfit (an endearing flaw that is its superpower) or Perspective Maker (a fresh way of seeing).'}
+4. ${nookLine(job)}
+${seriesLine()}
+5. Give 5 DIFFERENT luck-pun names that fit THIS drawing: hear a name and you should picture this drawing AND hear the luck.
+
+Return ONLY this JSON (no code fences):
+{"seen":"2-3 sentences: only what is in the drawing",
+ "collection":"misfits or persp",
+ "need":"the everyday need it's for, plain words",
+ "why":"one sentence: what in the drawing points to this luck",
+ "nook":"two-digit Nook code",
+ "names":[{"name":"luck-pun name","pun":"e.g. happy + petal","charm_title":"The ___ Charm","quick":"what it does, under 18 words","call_verb":"one-word verb","luck_tag":"1-3 plain words naming the kind of luck","look_tag":"2-4 words, the situation to see freshly"}]}`;
+  }
+
   function quickPrompt(job) {
     const persp = job.key === 'persp';
     return `${STYLE}
@@ -787,7 +861,8 @@ ${WORLD}
 ${COLLECTION_BRIEF[job.key]}
 
 ${needLine(job)}
-${nookLine()}
+${nookLine(job)}
+${seriesLine()}
 ${inspoLine()}
 ${avoidLine()}
 
@@ -1009,19 +1084,48 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   }
 
   /* ════════════════════════════════════════════════════
+     DRAWING UPLOAD — shrunk on the page before sending
+     (smaller = faster, and no size errors).
+     ════════════════════════════════════════════════════ */
+  function loadDrawing(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const max = 1024, scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const g = cv.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve({ dataUrl: cv.toDataURL('image/jpeg', 0.85), w, h });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file could not be opened as an image.')); };
+      img.src = url;
+    });
+  }
+  function userContent(text, image) {
+    if (!image) return text;
+    return [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: image.dataUrl.split(',')[1] } }, { type: 'text', text }];
+  }
+
+  /* ════════════════════════════════════════════════════
      RUN
      ════════════════════════════════════════════════════ */
   const STEP_MSGS = {
     research: ['Digging through real science…', 'Checking old folklore…', 'Knocking on wood…', 'Seeing who already owns this idea…', 'Collecting sources…'],
+    draw: ['Studying your drawing…', 'Reading its expression…', 'Listening for the luck in it…', 'Trying out names…'],
     write: ['Opening the Lucky Cabinet…', 'Finding the right Nook…', 'Inventing the backstory…', 'Naming the signature move…', 'Sketching Knick, Knack and Knock…', 'Writing the lucky ritual…'],
     quick: ['Filling the sketchbook…', 'Peeking into the Nooks…', 'Naming the strange little things…']
   };
 
   function makeJobs() {
+    if (state.mode === 'draw') {
+      return [{ id: 'draw', key: 'draw', mode: 'draw', need: $('needInput').value.trim(), surprise: false, image: state.drawing, status: 'pending' }];
+    }
     let need = $('needInput').value.trim(), surprise = false;
     if (!need) { need = drawNeed(); surprise = true; }   // both charms share the same surprise need
     return ['misfits', 'persp'].filter(k => state.on[k]).map(key => ({
-      key, need, surprise, develop: state.develop, devName: state.devName, mode: state.mode, status: 'pending',
+      id: key, key, need, surprise, develop: state.develop, devName: state.devName, mode: state.mode, status: 'pending',
       charm: null, sketches: null, research: null, webNote: '', names: null, namesState: 'none', note: ''
     }));
   }
@@ -1029,7 +1133,10 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   async function generate() {
     if (state.running) return;
     hideError();
-    if (!state.on.misfits && !state.on.persp) { showError('Pick at least one kind of charm — Lucky Misfit, Perspective Maker, or both.'); return; }
+    state.series = $('seriesInput').value.trim();
+    if (state.mode === 'draw') {
+      if (!state.drawing) { showError('Upload a drawing first — tap the dashed box.'); return; }
+    } else if (!state.on.misfits && !state.on.persp) { showError('Pick at least one kind of charm — Lucky Misfit, Perspective Maker, or both.'); return; }
     state.running = true;
     $('generateBtn').disabled = true;
     state.jobs = makeJobs();
@@ -1039,7 +1146,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     $('actionRow').style.display = 'none';
     state.jobs.forEach(job => {
       const el = document.createElement('div');
-      el.id = 'job-' + job.key;
+      el.id = 'job-' + job.id;
       el.innerHTML = statusHTML(job);
       $('sheets').appendChild(el);
       job.el = el;
@@ -1049,21 +1156,25 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     out.classList.add('visible');
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    await Promise.all(state.jobs.map(job => (job.mode === 'quick' ? runQuick(job) : runFull(job)).catch(err => jobFailed(job, err))));
+    await Promise.all(state.jobs.map(job => (job.mode === 'quick' ? runQuick(job) : job.mode === 'draw' ? runDrawNames(job) : runFull(job)).catch(err => jobFailed(job, err))));
 
     state.running = false;
     $('generateBtn').disabled = false;
+    refreshActions();
+  }
+
+  function refreshActions() {
     const anyFull = state.jobs.some(j => j.charm);
-    $('actionRow').style.display = state.jobs.some(j => j.charm || j.sketches) ? 'flex' : 'none';
+    $('actionRow').style.display = state.jobs.some(j => j.charm || j.sketches || j.options) ? 'flex' : 'none';
     ['copyBtn', 'txtBtn', 'pdfBtn'].forEach(id => { $(id).style.display = anyFull ? '' : 'none'; });
     $('paperToggle').style.display = anyFull ? '' : 'none';
     renderJump();
   }
 
   function statusHTML(job) {
-    const C = COLLECTIONS[job.key];
+    const C = COLLECTIONS[job.key] || { emoji: '🖍', one: 'Your drawing' };
     return `<div class="job-status">
-      <div class="js-title">${C.emoji} ${esc(C.one)} · ${job.surprise ? 'surprise need: ' : ''}${esc(job.need.slice(0, 80))}${job.need.length > 80 ? '…' : ''}</div>
+      <div class="js-title">${C.emoji} ${esc(C.one)}${job.need ? ' · ' + (job.surprise ? 'surprise need: ' : '') + esc(job.need.slice(0, 80)) + (job.need.length > 80 ? '…' : '') : ''}</div>
       <div class="js-step">Getting started…</div>
       <div class="js-msg"></div>
       <div class="bar"></div>
@@ -1118,7 +1229,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     // PASS 2 — write the charm (no tools, full token budget). One retry; a timeout retries on the faster model.
     setStep(job, (state.web ? 'Step 2 of 2 · ' : '') + 'Designing your ' + C.one, STEP_MSGS.write);
     const research = job.research && !job.research.empty ? job.research : null;
-    const body = { model: MODEL, max_tokens: TOKENS.write, messages: [{ role: 'user', content: fullPrompt(job, research) }] };
+    const body = { model: MODEL, max_tokens: TOKENS.write, messages: [{ role: 'user', content: userContent(fullPrompt(job, research), job.image) }] };
     let res;
     try { res = await askJSON(body, hasCharmCore); }
     catch (e1) {
@@ -1133,10 +1244,19 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     }
     clearInterval(job.timer);
     job.charm = normCharm(res.data, job.key);
+    if (job.chosen) {   // Name My Drawing: the name Morgan picked always wins
+      job.charm.name = job.chosen.name;
+      job.charm.pun = job.chosen.pun || job.charm.pun;
+      // keep the call exactly as it read on the name card he tapped
+      job.charm.verb = job.chosen.verb || job.charm.verb;
+      job.charm.tag = job.chosen.tag || job.charm.tag;
+      job.charm.charm_title = job.chosen.charm_title || job.charm.charm_title;
+    }
     // A repeat is flagged, never renamed. A developed sketch keeps its own name (that's not a repeat).
     job.charm.repeat = usedBefore.includes(job.charm.name.toLowerCase()) && job.charm.name.toLowerCase() !== (job.devName || '').toLowerCase();
     job.charm.alt_names = job.charm.alt_names.map(tidyName).filter(Boolean);
     job.charm.calling = callingLine(job.charm, job.key);
+    job.series = state.series;
     // Only links to sites the research actually visited are kept as sources.
     job.charm.real_roots.forEach(r => { if (!research || (r.src && !research.seen.has(domainOf(r.src)))) r.src = ''; });
     job.charm.number = assignBirthNumber(job.key);
@@ -1166,8 +1286,91 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       job.namesState = 'failed';
       job.namesErr = e.message;
     }
-    const box = $('nc-' + job.key);
+    const box = $('nc-' + job.id);
     if (box) box.innerHTML = nameCheckInner(job);
+  }
+
+  // NAME MY DRAWING, step 1: look at the drawing and offer 5 luck-pun names.
+  async function runDrawNames(job) {
+    setStep(job, 'Looking at your drawing', STEP_MSGS.draw);
+    const body = { model: MODEL, max_tokens: TOKENS.quick, messages: [{ role: 'user', content: userContent(drawNamesPrompt(job), job.image) }] };
+    const good = d => list(d.names).length > 0;
+    let res;
+    try { res = await askJSON(body, good); }
+    catch (e1) { res = await askJSON(e1.timeout ? Object.assign({}, body, { model: FALLBACK_MODEL }) : body, good); }
+    clearInterval(job.timer);
+    const d = res.data;
+    const chosenKind = state.on.misfits && !state.on.persp ? 'misfits' : (state.on.persp && !state.on.misfits ? 'persp' : '');
+    job.collection = chosenKind || (/persp/i.test(str(d.collection)) ? 'persp' : 'misfits');
+    job.seen = str(pick(d, ['seen', 'description']));
+    job.suggestedNeed = !job.need;
+    job.need = job.need || str(pick(d, ['need', 'luck'])) || 'a lucky day';
+    job.why = str(d.why);
+    job.nook = nookBy(state.nook) || nookBy(d.nook) || NOOKS[4];
+    job.series = state.series;
+    job.options = list(d.names).map(o => ({
+      name: tidyName(str(pick(o, ['name']))), pun: str(pick(o, ['pun'])), charm_title: str(pick(o, ['charm_title', 'title'])),
+      quick: str(pick(o, ['quick'])), verb: str(pick(o, ['call_verb', 'verb'])),
+      tag: str(pick(o, job.collection === 'persp' ? ['look_tag', 'luck_tag'] : ['luck_tag', 'look_tag']))
+    })).filter(o => o.name).slice(0, 5);
+    job.options.forEach(o => { o.calling = callingLine(o, job.collection); });
+    job.status = 'done';
+    job.el.innerHTML = drawNamesHTML(job);
+    job.el.querySelectorAll('.build-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => buildFromDrawing(job, job.options[i], btn));   // closure, not data-attributes
+    });
+  }
+
+  // NAME MY DRAWING, step 2: build the full charm card around the drawing with the chosen name.
+  let drawBuilds = 0;
+  async function buildFromDrawing(drawJob, opt, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Building below ↓'; }
+    const job = {
+      id: 'drawbuild' + (++drawBuilds), key: drawJob.collection, mode: 'full', need: drawJob.need, surprise: false,
+      image: drawJob.image, seen: drawJob.seen, chosen: opt, devName: opt.name, nookCode: drawJob.nook.code, seriesFixed: drawJob.series,
+      fromDrawing: true, status: 'pending', charm: null, research: null, webNote: '', names: null, namesState: 'none', note: ''
+    };
+    const el = document.createElement('div');
+    el.id = 'job-' + job.id;
+    el.innerHTML = statusHTML(job);
+    $('sheets').appendChild(el);
+    job.el = el;
+    state.jobs.push(job);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const keepSeries = state.series; state.series = drawJob.series;   // the series typed when the drawing was named
+    try { await runFull(job); } catch (err) { jobFailed(job, err); if (btn) { btn.disabled = false; btn.textContent = 'Try again →'; } }
+    finally { state.series = keepSeries; }
+    if (job.charm && btn) btn.textContent = 'Built ✓ (below)';
+    renderJump();
+    refreshActions();
+  }
+
+  function drawNamesHTML(job) {
+    const C = COLLECTIONS[job.collection];
+    return `<section class="charm-sheet ${C.cls}" id="sheet-${job.id}">
+      <div class="out-card">
+        <div class="out-pill pill-yellow">🖍 Your Drawing</div>
+        <div class="seen-card">
+          <img src="${job.image.dataUrl}" alt="your drawing">
+          <div class="seen-text">
+            <div class="fld-k">What I see</div><div class="fld-v">${esc(job.seen)}</div>
+            <div class="fld-k" style="margin-top:10px">${job.suggestedNeed ? 'The luck it looks made for (suggested)' : 'The luck you asked for'}</div><div class="fld-v">${esc(job.need)}${job.why ? ' — ' + esc(job.why) : ''}</div>
+            <div class="fld-k" style="margin-top:10px">Kind · Nook${job.series ? ' · Series' : ''}</div>
+            <div class="fld-v">${C.emoji} ${esc(C.one)} · ${job.nook.emoji} ${esc(job.nook.name)} (${esc(job.nook.code)})${job.series ? ' · ' + esc(job.series) + ' series' : ''}</div>
+          </div>
+        </div>
+      </div>
+      <div class="sketch-head">Five names for your drawing</div>
+      <div class="sketch-hint">Say each call out loud. Tap “Build this one” for the full charm card — you can build more than one.</div>
+      <div class="sketch-grid">${job.options.map(o => `<div class="sketch">
+        <div class="sk-name">${esc(o.name)}</div>
+        ${o.pun ? `<div class="sk-line" style="opacity:.75">${esc(o.pun)}</div>` : ''}
+        <div class="sk-luck">${esc(o.charm_title)}</div>
+        <div class="sk-call">“${esc(o.calling)}”</div>
+        ${o.quick ? `<div class="sk-quick">${esc(o.quick)}</div>` : ''}
+        <button class="dev-btn build-btn" type="button">Build this one →</button>
+      </div>`).join('')}</div>
+    </section>`;
   }
 
   async function runQuick(job) {
@@ -1206,7 +1409,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
   // carrying over the settings. The sketch list stays put in this tab.
   function openSketchInNewTab(job, s) {
-    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web };
+    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series };
     const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
     return !!window.open(url, '_blank');
   }
@@ -1224,6 +1427,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     $('needInput').value = String(p.need || '').slice(0, 300);
     state.develop = String(p.develop || '').slice(0, 700);
     state.devName = String(p.devName || '').slice(0, 40);
+    if (typeof p.series === 'string') $('seriesInput').value = p.series.slice(0, 40);
     setNook(p.nook && NOOKS.some(n => n.code === p.nook) ? p.nook : '');
     if (Array.isArray(p.inspo)) {
       state.inspo = p.inspo;
@@ -1273,19 +1477,20 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     const crowded = R && R.crowded.length ? `<div class="fld-grid" style="margin-top:12px">${fld('Already out there — steer clear of', R.crowded.map(x => x.name + (x.what ? ' (' + x.what + ')' : '')).join(' · '), true)}</div>` : '';
     const second = c.second_look.length ? `<div class="fld wide" style="margin-top:12px"><div class="fld-k">Worth a second look</div><div class="fld-v"><ul>${c.second_look.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div></div>` : '';
 
-    return `<section class="charm-sheet ${C.cls}" id="sheet-${job.key}">
+    return `<section class="charm-sheet ${C.cls}" id="sheet-${job.id}">
       <div class="charm-hero">
         ${numRowHTML(job)}
+        ${job.image ? `<img class="drawing-img" src="${job.image.dataUrl}" alt="Morgan's drawing of ${esc(c.name)}">` : ''}
         <div class="out-pill pill-accent" style="margin-top:8px">${C.emoji} ${esc(C.one)}</div>
         <div class="charm-name">${esc(c.name)}</div>
         ${(c.pronunciation || c.pun) ? `<div class="charm-pron">${c.pronunciation ? 'say it: ' + esc(c.pronunciation) : ''}${c.pronunciation && c.pun ? ' · ' : ''}${c.pun ? esc(c.pun) : ''}</div>` : ''}
         ${c.repeat ? '<div class="charm-pron"><span class="badge b-warn">name used before in this browser</span></div>' : ''}
         <div class="calling"><div class="calling-label">Call it · knock twice on wood</div>“${esc(c.calling)}”</div>
         ${c.charm_title ? `<div class="charm-title">${esc(c.charm_title)}</div>` : ''}
-        <div class="charm-nook">${c.nook.emoji} Lives in the ${esc(c.nook.name)} (${esc(c.nook.code)})</div>
+        <div class="charm-nook">${c.nook.emoji} Lives in the ${esc(c.nook.name)} (${esc(c.nook.code)})${job.series ? ' · ' + esc(job.series) + ' series' : ''}</div>
         ${c.quick ? `<div class="charm-quick">${esc(c.quick)}</div>` : ''}
         ${c.motto ? `<div class="charm-motto">“${esc(c.motto)}”</div>` : ''}
-        <div class="charm-seed">${job.surprise ? 'Surprise need: ' : 'Your need: '}${esc(job.need)}${job.develop ? ' · developed from a sketch' : ''}${job.note ? ' · ' + esc(job.note) : ''}</div>
+        <div class="charm-seed">${job.fromDrawing ? 'Named from your drawing · luck: ' : (job.surprise ? 'Surprise need: ' : 'Your need: ')}${esc(job.need)}${job.develop ? ' · developed from a sketch' : ''}${job.note ? ' · ' + esc(job.note) : ''}</div>
       </div>
 
       <div class="out-card">
@@ -1317,8 +1522,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         ${c.move ? zap('Signature move', c.move, true) : ''}
         <div class="growth-grid" style="margin-top:14px">
           <div class="stage s1"><div class="stage-name">Knick</div><div class="stage-knocks">born with 3 Knocks</div><div class="stage-desc">${esc(c.knick || '—')}</div></div>
-          <div class="stage s2"><div class="stage-name">Knack</div><div class="stage-knocks">at 34 Knocks</div><div class="stage-desc">${esc(c.knack || '—')}</div></div>
-          <div class="stage s3"><div class="stage-name">Knock</div><div class="stage-knocks">at 349 Knocks</div><div class="stage-desc">${esc(c.knock || '—')}</div></div>
+          <div class="stage s2"><div class="stage-name">Knack</div><div class="stage-knocks">at 34 Knocks${job.image ? ' · suggested' : ''}</div><div class="stage-desc">${esc(c.knack || '—')}</div></div>
+          <div class="stage s3"><div class="stage-name">Knock</div><div class="stage-knocks">at 349 Knocks${job.image ? ' · suggested' : ''}</div><div class="stage-desc">${esc(c.knock || '—')}</div></div>
         </div>
       </div>
 
@@ -1327,7 +1532,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         <div class="out-title">To Start Sketching</div>
         <div class="out-sub">// for the drawing table · MVANNP</div>
         <div class="fld-grid">
-          ${fld('Sketch note', c.look, true)}
+          ${fld(job.image ? 'From your drawing' : 'Sketch note', c.look, true)}
           ${palette}
           ${c.alt_names.length ? `<div class="fld wide"><div class="fld-k">Other names it could go by</div><div class="tag-row">${c.alt_names.map(n => `<span class="tag">${esc(n)}</span>`).join('')}</div></div>` : ''}
         </div>
@@ -1338,7 +1543,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         <div class="out-title">What It's Built On</div>
         <div class="web-status">${esc(job.webNote)}</div>
         ${roots}${trad}${crowded}${second}
-        <div class="fld wide" style="margin-top:16px"><div class="fld-k">Name check</div><div id="nc-${job.key}">${nameCheckInner(job)}</div></div>
+        <div class="fld wide" style="margin-top:16px"><div class="fld-k">Name check</div><div id="nc-${job.id}">${nameCheckInner(job)}</div></div>
       </div>
     </section>`;
   }
@@ -1355,7 +1560,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
 
   function sketchesHTML(job) {
     const C = COLLECTIONS[job.key];
-    return `<section class="charm-sheet ${C.cls}" id="sheet-${job.key}">
+    return `<section class="charm-sheet ${C.cls}" id="sheet-${job.id}">
       <div class="sketch-head">${C.emoji} Five ${esc(C.label)} for “${esc(job.need)}”</div>
       <div class="sketch-hint">Each “Develop this one” opens in its own tab — this list stays right here.</div>
       <div class="sketch-grid">${job.sketches.map(s => `<div class="sketch">
@@ -1376,8 +1581,9 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
 
   function renderJump() {
     const done = state.jobs.filter(j => j.charm || j.sketches);
-    if (state.jobs.length < 2 || !done.length) { $('jumpRow').innerHTML = ''; return; }
-    $('jumpRow').innerHTML = 'Jump to: ' + state.jobs.map(j => `<a href="#job-${j.key}">${esc(j.charm ? j.charm.name : COLLECTIONS[j.key].label)}</a>`).join(' · ');
+    const shown = state.jobs.filter(j => COLLECTIONS[j.key]);
+    if (shown.length < 2 || !done.length) { $('jumpRow').innerHTML = ''; return; }
+    $('jumpRow').innerHTML = 'Jump to: ' + shown.map(j => `<a href="#job-${j.id}">${esc(j.charm ? j.charm.name : COLLECTIONS[j.key].label)}</a>`).join(' · ');
   }
 
   /* ════════════════════════════════════════════════════
@@ -1390,7 +1596,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     L.push('No. ' + c.number + '   ' + c.name.toUpperCase() + (c.pronunciation ? '  (' + c.pronunciation + ')' : ''));
     L.push([c.charm_title, COLLECTIONS[job.key].one, c.nook.code + ' ' + c.nook.name].filter(Boolean).join(' · '));
     L.push('==============================');
-    add('Name', c.pun); add('Call it', c.calling); add('Need', job.need); add('', c.quick); add('Motto', c.motto); L.push('');
+    add('Name', c.pun); add('Call it', c.calling); add('Need', job.need);
+    add('Series', job.series ? job.series + ' series' : ''); if (job.fromDrawing) L.push('(Named from Morgan\'s drawing)'); add('', c.quick); add('Motto', c.motto); L.push('');
     L.push('WHAT IT DOES'); c.what_it_does.forEach(p => L.push(p)); L.push('');
     if (persp) { add('The fresh perspective', c.perspective); add('What people miss', c.overlooked); }
     else { add('The flaw', c.flaw); add('Why the flaw is the superpower', c.superpower); }
@@ -1570,6 +1777,13 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     K.y += 6; K.rule(C.pink, 1.2); K.y += 14;
     K.para(c.quick, { size: 15, style: 'bold', rgb: C.text, lh: 20 });
     if (c.motto) { K.y += 2; K.para('"' + c.motto + '"', { size: 11, style: 'italic', rgb: C.lime, lh: 15 }); }
+    if (job.series) K.para(job.series.toUpperCase() + ' SERIES', { size: 9.5, style: 'monobold', rgb: C.lime, lh: 13 });
+    if (job.image) {
+      const iw = job.image.w, ih = job.image.h, sc = Math.min(220 / iw, 260 / ih);
+      const w = iw * sc, h = ih * sc;
+      K.y += 6; K.need(h + 8);
+      try { P.addImage(job.image.dataUrl, 'JPEG', M + (CW - w) / 2, K.y, w, h); K.y += h + 8; } catch (e) {}
+    }
     K.font('mono', 8, C.muted); K.need(14); P.text('Generated ' + pdfSafe(pdfPrettyDate()) + '  ·  need: ' + pdfSafe(job.need).slice(0, 80), M, K.y + 9); K.y += 16;
 
     K.box(persp ? 'Lucky thought' : 'Lucky ritual', persp ? c.lucky_thought : c.lucky_ritual, C.yellow, { size: 15, style: 'bold' });
@@ -1673,15 +1887,28 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   }
   function updateButton() {
     const both = state.on.misfits && state.on.persp;
-    $('generateBtn').textContent = state.mode === 'quick'
+    $('generateBtn').textContent = state.mode === 'draw' ? '🖍 NAME MY DRAWING! 🖍' : state.mode === 'quick'
       ? '✎ SKETCH ' + (both ? 'BOTH KINDS' : 'FIVE IDEAS') + ' ✎'
       : (both ? '🍀 MAKE BOTH KNICKKNOCKS! 🍀' : '🍀 MAKE A KNICKKNOCK! 🍀');
   }
+  let kindsBeforeDraw = null;
   function setMode(mode) {
+    const wasDraw = state.mode === 'draw';
     state.mode = mode;
+    const draw = mode === 'draw';
+    // Drawing mode starts on "let it decide" (both off); leaving it puts the earlier choice back.
+    if (draw && !wasDraw) { kindsBeforeDraw = Object.assign({}, state.on); setOn('misfits', false); setOn('persp', false); }
+    if (!draw && wasDraw && !state.on.misfits && !state.on.persp) { const k = kindsBeforeDraw || { misfits: true, persp: false }; setOn('misfits', k.misfits); setOn('persp', k.persp); }
+    $('drawWrap').style.display = draw ? 'block' : 'none';
+    $('inspoWrap').style.display = draw ? 'none' : '';
+    $('needLabel').innerHTML = draw
+      ? 'What luck is it for? <span class="hint">(optional — leave blank and it reads your drawing)</span>'
+      : 'What do you need luck with? <span class="hint">(or leave it blank and get surprised)</span>';
+    $('bothNote').textContent = draw ? 'Optional — tap one to choose, or leave both off and it decides from your drawing.' : 'Tap one or both. Both = the same need, two charms.';
     document.querySelectorAll('#modeRow .pill-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
     $('modeNote').textContent = mode === 'quick'
       ? 'Five rough charms per kind, fast — tap “Develop this one” on any you like.'
+      : draw ? 'Upload a Knickknock you drew. It suggests 5 luck-pun names and the luck it’s for — pick one for the full card.'
       : 'One finished charm per collection — name, what it does, backstory, and how it grows.';
     $('webWrap').style.display = mode === 'quick' ? 'none' : '';
     updateButton();
@@ -1715,6 +1942,16 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     state.inspo = Array.from(document.querySelectorAll('#inspoGrid .pill-btn.active')).map(x => x.dataset.inspo);
   }));
   $('webBtn').addEventListener('click', toggleWeb);
+  $('drawFile').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    hideError();
+    try {
+      state.drawing = await loadDrawing(f);
+      $('drawThumb').src = state.drawing.dataUrl; $('drawThumb').style.display = 'block';
+      $('drawText').innerHTML = '<b>Drawing ready ✓</b>' + esc(f.name || 'your drawing') + ' — tap to swap it for another.';
+    } catch (err) { state.drawing = null; showError(err.message); }
+  });
   document.querySelectorAll('#paperToggle button').forEach(b => b.addEventListener('click', () => {
     state.paper = b.dataset.paper;
     document.querySelectorAll('#paperToggle button').forEach(x => x.classList.toggle('active', x === b));
