@@ -317,6 +317,11 @@
     background: rgba(255,255,255,0.06); border: 2.5px solid rgba(255,251,232,0.15); border-radius: 16px;
     padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
   }
+  .sketch.taken { opacity: 0.55; }
+  .sk-check { font-size: 12.5px; margin: 4px 0 6px; line-height: 1.35; opacity: 0.9; }
+  .sk-check .badge { margin-right: 6px; }
+  .rename-btn { font-family: 'Fredoka One', cursive; font-size: 12px; letter-spacing: 0.04em; background: transparent; color: var(--lime); border: 2px solid var(--lime); border-radius: 100px; padding: 3px 12px; margin-top: 6px; cursor: pointer; }
+  .rename-btn:hover { background: var(--lime); color: var(--dark-text); }
   .sketch .sk-name { font-family: 'Fredoka One', cursive; font-size: 24px; color: var(--yellow); line-height: 1.1; }
   .sketch .sk-luck { font-family: 'Fredoka One', cursive; font-size: 14px; color: var(--accent); }
   .sketch .sk-quick { font-family: 'Boogaloo', cursive; font-size: 18px; line-height: 1.3; }
@@ -921,11 +926,10 @@ Return ONLY this JSON (no code fences):
 {"sketches":[{"name":"luck-pun name, e.g. Owlways","pun":"e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","look":"base + signature feature, one line","move":"signature move name (doubled sound)","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
-  function namePrompt(job, c) {
-    const names = [c.name].concat(c.alt_names || []).filter(Boolean).slice(0, 4);
+  function namePrompt(names, context) {
     return `Quick screen: are these invented character names already used by well-known characters, mascots, toys, games, children's books, or brands?
 Names: ${names.join(', ')}
-Context: an original good-luck character — ${c.charm_title || ''}: "${c.quick}". 
+Context: original good-luck characters — ${context}. 
 
 Use web search (at most 3 searches; you may check several names in one search). Return ONLY this JSON:
 {"results":[{"name":"","status":"clear|similar|taken","found":"what you found, one sentence; empty if clear","url":""}],"best":"the strongest name that is clear","note":"one sentence"}
@@ -1320,7 +1324,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
 
   async function runNameCheck(job) {
     try {
-      const r = await askJSON({ model: RESEARCH_MODEL, max_tokens: TOKENS.names, tools: [NAME_TOOL], messages: [{ role: 'user', content: namePrompt(job, job.charm) }] },
+      const r = await askJSON({ model: RESEARCH_MODEL, max_tokens: TOKENS.names, tools: [NAME_TOOL], messages: [{ role: 'user', content: namePrompt([job.charm.name].concat(job.charm.alt_names || []).filter(Boolean).slice(0, 4), (job.charm.charm_title || '') + ': "' + job.charm.quick + '"') }] },
         d => Array.isArray(d.results));
       const seen = domainsSeen(r.all);
       job.names = {
@@ -1336,7 +1340,81 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       job.namesErr = e.message;
     }
     const box = $('nc-' + job.id);
-    if (box) box.innerHTML = nameCheckInner(job);
+    if (box) { box.innerHTML = nameCheckInner(job); wireRename(job); }
+  }
+
+  /* ── NAME SCREEN BEFORE YOU PICK: the five offered names get checked right away,
+        so nobody spends a full build on a name that's already taken. ── */
+  async function screenNames(items, context) {
+    const r = await askJSON({ model: RESEARCH_MODEL, max_tokens: TOKENS.names, tools: [NAME_TOOL], messages: [{ role: 'user', content: namePrompt(items.map(o => o.name), context) }] },
+      d => Array.isArray(d.results));
+    const seen = domainsSeen(r.all), out = {};
+    list(r.data.results).forEach(x => {
+      const n = str(pick(x, ['name'])).toLowerCase(); if (!n) return;
+      out[n] = { status: (str(pick(x, ['status'])) || 'clear').toLowerCase(), found: str(pick(x, ['found', 'note'])), url: (str(x && x.url) && seen.has(domainOf(x.url))) ? str(x.url) : '' };
+    });
+    return out;
+  }
+  function checkBadge(st) {
+    return /taken/.test(st) ? '<span class="badge b-bad">taken</span>' : (/similar/.test(st) ? '<span class="badge b-warn">similar</span>' : '<span class="badge b-ok">clear</span>');
+  }
+  function skCheckHTML(o) {
+    if (!o.check) return '';
+    if (o.check === 'checking') return 'Checking the name…';
+    if (o.check === 'off') return 'Name not checked (web check is off).';
+    if (o.check === 'failed') return 'Name check didn\'t finish — search it yourself.';
+    return checkBadge(o.check.status) + esc(o.check.found || 'Nothing notable found.');
+  }
+  // items: the option/sketch objects (same order as the cards); verb: "build" / "develop"
+  async function screenCards(job, items, verb) {
+    const cards = () => Array.from(job.el.querySelectorAll('.sketch'));
+    const paint = () => cards().forEach((card, i) => {
+      const o = items[i]; if (!o) return;
+      const box = card.querySelector('.sk-check'); if (box) box.innerHTML = skCheckHTML(o);
+      const taken = o.check && o.check.status && /taken/.test(o.check.status);
+      card.classList.toggle('taken', !!taken);
+      const btn = card.querySelector('.dev-btn');
+      if (btn && !btn.disabled && !btn.classList.contains('opened') && !/Built|Building/.test(btn.textContent)) {
+        btn.textContent = taken ? 'Taken — ' + verb + ' anyway?' : (verb === 'build' ? 'Build this one →' : 'Develop this one ↗');
+      }
+    });
+    if (!state.web) { items.forEach(o => { o.check = 'off'; }); paint(); return; }
+    items.forEach(o => { o.check = 'checking'; }); paint();
+    try {
+      const res = await screenNames(items, items.map(o => o.charm_title).filter(Boolean).slice(0, 2).join('; ') || job.need);
+      items.forEach(o => { o.check = res[o.name.toLowerCase()] || { status: 'clear', found: '' }; });
+    } catch (e) { items.forEach(o => { o.check = 'failed'; }); }
+    paint();
+  }
+
+  /* ── RENAME A FINISHED CARD: swap in a clear alternative, no new AI call. ── */
+  function renameCandidates(job) {
+    if (job.namesState !== 'done' || !job.names) return [];
+    const cur = job.charm.name.toLowerCase();
+    return job.names.results.filter(x => x.name.toLowerCase() !== cur && !/taken/.test(x.status));
+  }
+  function wireRename(job) {
+    const box = $('nc-' + job.id); if (!box) return;
+    const cands = renameCandidates(job);
+    box.querySelectorAll('.rename-btn').forEach((b, i) => b.addEventListener('click', () => renameCharm(job, cands[i].name)));
+  }
+  function renameCharm(job, newName) {
+    const c = job.charm, old = c.name;
+    newName = tidyName(newName); if (!newName || newName === old) return;
+    const rx = new RegExp('\\b' + old.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+    const swap = v => typeof v === 'string' ? v.replace(rx, newName) : Array.isArray(v) ? v.map(swap) : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)])) : v;
+    ['quick', 'motto', 'charm_title', 'flaw', 'superpower', 'perspective', 'overlooked', 'origin', 'nook_life', 'personality', 'habit', 'lucky_ritual', 'lucky_thought', 'move', 'knick', 'knack', 'knock', 'look', 'what_it_does', 'real_roots', 'second_look']
+      .forEach(k => { c[k] = swap(c[k]); });
+    if (job.care) job.care = swap(job.care);
+    c.name = newName; c.pun = ''; c.pronunciation = '';
+    c.alt_names = c.alt_names.filter(n => n.toLowerCase() !== newName.toLowerCase());
+    c.renamedFrom = (c.renamedFrom ? c.renamedFrom + ', ' : '') + old;
+    c.repeat = false; job.devName = newName;
+    c.calling = callingLine(c, job.key);
+    rememberNames([newName]);
+    if (job.care && job.careState === 'done') job.carePdf = drawCareCard(job, 'post').toDataURL('image/jpeg', 0.92);
+    renderSheet(job);
+    renderJump();
   }
 
   /* ════════════════════════════════════════════════════
@@ -1622,6 +1700,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     job.el.querySelectorAll('.build-btn').forEach((btn, i) => {
       btn.addEventListener('click', () => buildFromDrawing(job, job.options[i], btn));   // closure, not data-attributes
     });
+    screenCards(job, job.options, 'build');
   }
 
   // NAME MY DRAWING, step 2: build the full charm card around the drawing with the chosen name.
@@ -1664,12 +1743,13 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         </div>
       </div>
       <div class="sketch-head">Five names for your drawing</div>
-      <div class="sketch-hint">Say each call out loud. Tap “Build this one” for the full charm card — you can build more than one.</div>
+      <div class="sketch-hint">Say each call out loud. Each name gets a quick check first, so you can skip any that are taken. Tap “Build this one” for the full charm card — you can build more than one.</div>
       <div class="sketch-grid">${job.options.map(o => `<div class="sketch">
         <div class="sk-name">${esc(o.name)}</div>
         ${o.pun ? `<div class="sk-line" style="opacity:.75">${esc(o.pun)}</div>` : ''}
         <div class="sk-luck">${esc(o.charm_title)}</div>
         <div class="sk-call">“${esc(o.calling)}”</div>
+        <div class="sk-check"></div>
         ${o.quick ? `<div class="sk-quick">${esc(o.quick)}</div>` : ''}
         <button class="dev-btn build-btn" type="button">Build this one →</button>
       </div>`).join('')}</div>
@@ -1696,6 +1776,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     rememberNames(job.sketches.map(s => s.name));
     job.status = 'done';
     job.el.innerHTML = sketchesHTML(job);
+    setTimeout(() => screenCards(job, job.sketches, 'develop'), 0);
     job.el.querySelectorAll('.dev-btn').forEach((btn, i) => {
       btn.addEventListener('click', () => {                                     // closure, not data-attributes
         const opened = openSketchInNewTab(job, job.sketches[i]);
@@ -1759,7 +1840,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const fld = (k, v, wide) => v ? `<div class="fld${wide ? ' wide' : ''}"><div class="fld-k">${esc(k)}</div><div class="fld-v">${esc(v)}</div></div>` : '';
   const zap = (label, v, big) => v ? `<div class="out-zap${big ? ' big' : ''}"><div class="zap-label">${esc(label)}</div>${esc(v)}</div>` : '';
 
-  function renderSheet(job) { job.el.innerHTML = charmHTML(job); renderCare(job); }
+  function renderSheet(job) { job.el.innerHTML = charmHTML(job); renderCare(job); wireRename(job); }
 
   function numRowHTML(job) {
     return `<div class="num-row"><span class="num-badge">No. ${esc(job.charm.number)}</span><span class="num-note">birth number</span></div>`;
@@ -1858,7 +1939,9 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     if (job.namesState === 'failed') return `<div class="nc-found">The name check didn't finish (${esc(job.namesErr || '')}). Search “${esc(job.charm.name)} character” yourself before you publish.</div>`;
     const N = job.names; if (!N) return '';
     const badge = s => /taken/.test(s) ? '<span class="badge b-bad">taken</span>' : (/similar/.test(s) ? '<span class="badge b-warn">similar</span>' : '<span class="badge b-ok">clear</span>');
-    return N.results.map(x => `<div class="nc-row"><div class="nc-name">${esc(x.name)} ${badge(x.status)}</div><div class="nc-found">${esc(x.found || 'Nothing notable found.')}${x.url ? `<br><a class="src-link" href="${safeUrl(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a>` : ''}</div></div>`).join('') +
+    const cur = job.charm.name.toLowerCase();
+    return (job.charm.renamedFrom ? `<div class="nc-found" style="margin-bottom:8px">Renamed from <b>${esc(job.charm.renamedFrom)}</b> — the rest of the card is unchanged.</div>` : '') +
+      N.results.map(x => `<div class="nc-row"><div class="nc-name">${esc(x.name)} ${badge(x.status)}${x.name.toLowerCase() === cur ? ' <span class="badge b-ok">on this card</span>' : (/taken/.test(x.status) ? '' : `<br><button class="rename-btn" type="button">Use this name${/similar/.test(x.status) ? ' anyway' : ''}</button>`)}</div><div class="nc-found">${esc(x.found || 'Nothing notable found.')}${x.url ? `<br><a class="src-link" href="${safeUrl(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a>` : ''}</div></div>`).join('') +
       `<div class="nc-found" style="margin-top:8px">${N.best ? 'Strongest clear name: <b>' + esc(N.best) + '</b>. ' : ''}${esc(N.note)} <i>Quick screen, not a trademark search.</i></div>`;
   }
 
@@ -1872,6 +1955,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         ${s.pun ? `<div class="sk-line" style="opacity:.75">${esc(s.pun)}</div>` : ''}
         <div class="sk-luck">${esc(s.charm_title)}</div>
         <div class="sk-call">“${esc(s.calling)}”</div>
+        <div class="sk-check"></div>
         <div class="sk-line"><b>Nook</b>${s.nook.emoji} ${esc(s.nook.name)} (${esc(s.nook.code)})</div>
         <div class="sk-quick">${esc(s.quick)}</div>
         ${s.hook ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Fresh perspective' : 'Flaw → superpower'}</b>${esc(s.hook)}</div>` : ''}
@@ -1901,7 +1985,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     L.push([c.charm_title, COLLECTIONS[job.key].one, c.nook.code + ' ' + c.nook.name].filter(Boolean).join(' · '));
     L.push('==============================');
     add('Name', c.pun); add('Call it', c.calling); add('Need', job.need);
-    add('Series', job.series ? job.series + ' series' : ''); if (job.fromDrawing) L.push('(Named from Morgan\'s drawing)'); add('', c.quick); add('Motto', c.motto); L.push('');
+    add('Renamed from', c.renamedFrom); add('Series', job.series ? job.series + ' series' : ''); if (job.fromDrawing) L.push('(Named from Morgan\'s drawing)'); add('', c.quick); add('Motto', c.motto); L.push('');
     L.push('WHAT IT DOES'); c.what_it_does.forEach(p => L.push(p)); L.push('');
     if (persp) { add('The fresh perspective', c.perspective); add('What people miss', c.overlooked); }
     else { add('The flaw', c.flaw); add('Why the flaw is the superpower', c.superpower); }
