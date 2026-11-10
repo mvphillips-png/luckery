@@ -227,6 +227,13 @@
   .seen-card { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
   .seen-card img { width: 180px; max-height: 240px; object-fit: contain; border-radius: 12px; background: #f3e3b3; }
   .seen-card .seen-text { flex: 1; min-width: 220px; }
+  .care-zone { margin-top: 6px; }
+  .care-btn { font-family: 'Fredoka One', cursive; font-size: 16px; letter-spacing: 0.04em; background: var(--yellow); color: var(--dark-text); border: 3px solid var(--dark-text); border-radius: 100px; padding: 10px 22px; cursor: pointer; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); }
+  .care-btn:disabled { opacity: 0.6; cursor: wait; }
+  .care-hint { font-size: 13px; opacity: 0.75; margin-top: 8px; }
+  .care-sizes { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; align-items: center; }
+  .care-sizes .pill-btn.active { background: var(--yellow); color: var(--dark-text); }
+  .care-preview { display: block; max-width: 100%; max-height: 640px; margin: 8px auto 0; border-radius: 12px; box-shadow: 4px 4px 0 rgba(0,0,0,0.4); }
   .collector { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 10px; }
   .type-pill { font-family: 'Fredoka One', cursive; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; border: 2px solid var(--lime); color: var(--lime); border-radius: 100px; padding: 3px 12px; }
   .move { font-family: 'Boogaloo', cursive; font-size: 17px; color: var(--cream); }
@@ -555,7 +562,7 @@
   const FALLBACK_MODEL = 'claude-sonnet-4-6';   // used once if the writing call times out
   const SEARCH_TOOL = { type: 'web_search_20250305', name: 'web_search', max_uses: 4 };
   const NAME_TOOL   = { type: 'web_search_20250305', name: 'web_search', max_uses: 3 };
-  const TOKENS = { write: 8000, quick: 6000, research: 3000, names: 2000 };
+  const TOKENS = { write: 8000, quick: 6000, research: 3000, names: 2000, care: 4000 };
 
   const COLLECTIONS = {
     misfits: { key: 'misfits', label: 'Lucky Misfits', one: 'Lucky Misfit', cls: 'misfit', emoji: '🍀' },
@@ -756,6 +763,48 @@ Return ONLY this JSON, no other text:
     return `VERIFIED WEB RESEARCH — build on it. real_roots must come ONLY from these items, with their url copied into src. Do not present any other fact as verified.
 ${lines.join('\n') || '(searches found nothing usable — treat as no research)'}
 ${crowded ? 'CROWDED TERRITORY — steer the design and name clear of: ' + crowded : ''}`;
+  }
+
+  const NOOK_CARE = {
+    '33': 'daylight and a clear view out', '34': 'quiet, and a soft spot to nap', '39': 'a steady routine: same time, same place',
+    '43': 'warmth, and a seat near breakfast', '44': 'being found: picked up and used now and then', '49': 'being carried along with you',
+    '93': 'getting out the door with you', '94': 'water and a kind word', '99': 'a job to do'
+  };
+
+  function carePrompt(job) {
+    const c = job.charm, persp = job.key === 'persp';
+    return `You write the CARE CARD for a Knickknock: a cute good-luck charm creature (Morgan, an illustrator, is building a collectible world of them).
+
+WORLD CARE RULES (same for every Knickknock):
+- They eat being called. Every knock-knock call is one Knock, and Knocks are how they grow (Knick → Knack at 34 → Knock at 349).
+- Skip calling it too long and it goes DUSTY: faded colors, grumpy face, and its luck RUNS BACKWARDS, in a way that mirrors the exact luck it normally brings. It never dies, never gets hurt.
+- Wake a Dusty charm with three knocks, then its own small "sorry" ritual.
+- Its Nook sets a basic need. ${c.nook.name} (${c.nook.code}) needs: ${NOOK_CARE[c.nook.code] || 'a little attention'}.
+
+THE CHARM:
+- Name: ${c.name}${c.pun ? ' (' + c.pun + ')' : ''} · ${c.charm_title} · ${COLLECTIONS[job.key].one}
+- The luck it brings: ${job.need}
+- Call: "${c.calling}"
+- What it does: ${c.quick}
+- ${persp ? 'Fresh perspective: ' + c.perspective : 'Flaw that is its superpower: ' + c.flaw + ' / ' + c.superpower}
+- Personality: ${c.personality} · Habit: ${c.habit}
+- Look: ${c.look}
+${job.series ? '- Series: ' + job.series : ''}
+
+TONE: playful mischief, kid-safe, like instructions on a toy box. Backwards luck = small, funny, harmless everyday mishaps (cold coffee, socks that don't match, every red light) — never injuries, fear, or anything mean. Plain words, short lines; it has to fit on a phone-sized card.
+
+Return ONLY this JSON (no code fences):
+{"snack":"one funny charm-specific snack besides the calls, 2-8 words",
+ "icons":[{"icon":"one emoji","label":"2-3 words"}],
+ "nook_needs":"one sentence: its Nook's need, in its own style",
+ "daily":"one short care step, under 12 words",
+ "weekly":"one short care step, under 12 words",
+ "house_rule":"one funny, very specific house rule, under 22 words",
+ "warning_signs":["2-3 early signs it's getting hungry, each under 12 words"],
+ "dusty":"what it looks like when Dusty, under 18 words",
+ "backwards_luck":["exactly 3 mishaps: its own luck running backwards, each under 14 words"],
+ "wake_up":"its sorry ritual after the three knocks, under 20 words"}
+"icons" = exactly 4 care-label symbols, like a laundry tag (e.g. ☀️ "daylight daily").`;
   }
 
   function drawingBlock(job) {
@@ -1290,6 +1339,260 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     if (box) box.innerHTML = nameCheckInner(job);
   }
 
+  /* ════════════════════════════════════════════════════
+     CARE CARD — its own button, its own short call, drawn on a canvas
+     so it downloads as a social-size image (and lands in the PDF).
+     ════════════════════════════════════════════════════ */
+  const CARE_SIZES = {
+    post: { w: 1080, h: 1440, label: 'Post 3:4' },
+    story: { w: 1080, h: 1920, label: 'Story 9:16' },
+    square: { w: 1080, h: 1080, label: 'Square 1:1' }
+  };
+
+  async function makeCare(job) {
+    job.careState = 'loading'; job.careErr = '';
+    renderCare(job);
+    try {
+      const body = { model: MODEL, max_tokens: TOKENS.care, messages: [{ role: 'user', content: carePrompt(job) }] };
+      const good = d => !!(d && (d.house_rule || d.backwards_luck));
+      let res;
+      try { res = await askJSON(body, good); }
+      catch (e1) { res = await askJSON(e1.timeout ? Object.assign({}, body, { model: FALLBACK_MODEL }) : body, good); }
+      const d = res.data;
+      job.care = {
+        snack: str(d.snack), nook_needs: str(d.nook_needs), daily: str(d.daily), weekly: str(d.weekly),
+        house_rule: str(pick(d, ['house_rule', 'quirk', 'rule'])),
+        warning_signs: strList(d.warning_signs).slice(0, 3), dusty: str(d.dusty),
+        backwards_luck: strList(pick(d, ['backwards_luck', 'mischief'])).slice(0, 3), wake_up: str(pick(d, ['wake_up', 'wake'])),
+        icons: list(d.icons).map(x => ({ icon: str(pick(x, ['icon', 'emoji'])), label: str(pick(x, ['label', 'text'])) })).filter(x => x.label).slice(0, 4)
+      };
+      await careAssets(job);
+      job.carePdf = drawCareCard(job, 'post').toDataURL('image/jpeg', 0.92);   // ready for the PDF page
+      job.careState = 'done';
+    } catch (err) {
+      job.careState = 'failed'; job.careErr = err.message || 'unknown error';
+    }
+    renderCare(job);
+  }
+
+  async function careAssets(job) {
+    try {
+      await Promise.race([Promise.all([document.fonts.load('60px "Fredoka One"'), document.fonts.load('700 30px Nunito'), document.fonts.load('900 30px Nunito')]), new Promise(r => setTimeout(r, 2500))]);
+    } catch (e) {}
+    if (job.image && !job.imgEl) {
+      job.imgEl = await new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = job.image.dataUrl; });
+    }
+  }
+
+  function careWrap(g, text, maxW) {
+    const out = [];
+    String(text || '').split(/\n/).forEach(par => {
+      let line = '';
+      par.split(/\s+/).filter(Boolean).forEach(w => {
+        const t = line ? line + ' ' + w : w;
+        if (g.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+      });
+      if (line) out.push(line);
+    });
+    return out;
+  }
+
+  function drawCareCard(job, sizeKey) {
+    const Z = CARE_SIZES[sizeKey] || CARE_SIZES.post, W = Z.w, H = Z.h;
+    const c = job.charm, k = job.care, persp = job.key === 'persp';
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const g = cv.getContext('2d');
+    const INK = '#2a1450', MUTED = '#6b5a86', CREAM = '#fff6dc', NIGHT = '#1a0a2e';
+    const ACC = persp ? '#2cbfb0' : '#ff7c2a', ACC_INK = persp ? '#0b7d72' : '#c9480f', ACC_SOFT = persp ? '#d8f3ef' : '#ffe3cf';
+    const HEAD = '"Fredoka One", "Arial Rounded MT Bold", sans-serif', BODY = 'Nunito, "Helvetica Neue", Arial, sans-serif';
+    const font = (wt, px, fam) => { g.font = (wt ? wt + ' ' : '') + Math.round(px) + 'px ' + fam; };
+    const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+
+    // frame
+    g.fillStyle = NIGHT; g.fillRect(0, 0, W, H);
+    const O = 34, CX = O, CY = O, CWd = W - 2 * O - 10, CH = H - 2 * O - 10;
+    g.fillStyle = ACC; rr(CX + 10, CY + 10, CWd, CH, 38); g.fill();
+    g.fillStyle = CREAM; rr(CX, CY, CWd, CH, 38); g.fill();
+    g.lineWidth = 6; g.strokeStyle = NIGHT; rr(CX, CY, CWd, CH, 38); g.stroke();
+
+    const P = 52, X0 = CX + P, IW = CWd - 2 * P;
+    const square = sizeKey === 'square';
+    const callLine = c.calling || '';
+
+    // header band
+    const bandH = 78;
+    g.save(); rr(CX, CY, CWd, bandH + 38, 38); g.clip(); g.fillStyle = ACC; g.fillRect(CX, CY, CWd, bandH); g.restore();
+    g.fillStyle = NIGHT; g.fillRect(CX, CY + bandH, CWd, 6);
+    font('', 38, HEAD); g.fillStyle = NIGHT; g.textBaseline = 'middle'; g.textAlign = 'left';
+    g.fillText('CARE CARD', X0, CY + bandH / 2 + 2);
+    font('900', 28, BODY); g.textAlign = 'right'; g.fillText('No. ' + (c.number || ''), X0 + IW, CY + bandH / 2 + 2);
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    const top = CY + bandH + 6 + 30, bottom = CY + CH - 40;
+
+    // everything below is laid out at scale s; shrink until it fits
+    const layout = (s, draw, extra) => {
+      let y = top;
+      const T = (wt, px, fam, color, text, x, yy, align) => { if (!draw) return; font(wt, px * s, fam); g.fillStyle = color; g.textAlign = align || 'left'; g.fillText(text, x, yy); g.textAlign = 'left'; };
+      // name block (+ drawing beside it on square)
+      const thumb = square ? Math.round(210 * s) : 0;
+      const nameW = IW - (thumb ? thumb + 24 : 0);
+      font('', 92 * s, HEAD);
+      let nameSize = 92 * s; while (g.measureText(c.name).width > nameW && nameSize > 40) { nameSize -= 4; font('', nameSize, HEAD); }
+      const nameTop = y;
+      y += nameSize;
+      if (draw) { font('', nameSize, HEAD); g.fillStyle = INK; g.fillText(c.name, X0, y); }
+      font('700', 28 * s, BODY);
+      const subLines = careWrap(g, [c.charm_title, c.nook.emoji + ' ' + c.nook.name + ' (' + c.nook.code + ')', job.series ? job.series + ' series' : ''].filter(Boolean).join('  ·  '), nameW);
+      y += 8 * s;
+      subLines.forEach(l => { y += 38 * s; T('700', 28, BODY, MUTED, l, X0, y); });
+      if (thumb) {
+        y = Math.max(y, nameTop + thumb);
+        if (draw) careImage(g, job, X0 + IW - thumb, nameTop, thumb, thumb, s);
+      }
+      y += 26 * s;
+      // drawing (post / story)
+      if (!square) {
+        const dh = Math.round((sizeKey === 'story' ? 520 : 330) * s + (extra || 0));
+        if (draw) careImage(g, job, X0, y, IW, dh, s);
+        y += dh + 26 * s;
+      }
+      // care-label icons
+      const icons = k.icons.length ? k.icons : [{ icon: '✊', label: 'call daily' }];
+      const cell = IW / icons.length, rad = 44 * s;
+      icons.forEach((ic, i) => {
+        const cx = X0 + cell * i + cell / 2, cy = y + rad;
+        if (draw) {
+          g.lineWidth = 4 * s; g.strokeStyle = INK; g.fillStyle = '#ffffff';
+          g.beginPath(); g.arc(cx, cy, rad, 0, Math.PI * 2); g.fill(); g.stroke();
+          font('', 44 * s, BODY); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = INK; g.fillText(ic.icon || '•', cx, cy + 2 * s);
+          g.textBaseline = 'alphabetic';
+          font('900', 22 * s, BODY); g.fillStyle = INK;
+          careWrap(g, ic.label.toUpperCase(), cell - 12).slice(0, 2).forEach((l, j) => g.fillText(l, cx, cy + rad + 30 * s + j * 26 * s));
+          g.textAlign = 'left';
+        }
+      });
+      font('900', 22 * s, BODY);
+      const labelRows = Math.max(1, ...icons.map(ic => Math.min(2, careWrap(g, ic.label.toUpperCase(), cell - 12).length)));
+      y += rad * 2 + 30 * s + labelRows * 26 * s + 14 * s;
+
+      // sections
+      const section = (label, body, opts) => {
+        opts = opts || {};
+        const w = opts.w || IW, x = opts.x || X0;
+        let yy = opts.y != null ? opts.y : y;
+        yy += 34 * s; T('', 25, HEAD, ACC_INK, label.toUpperCase(), x, yy);
+        font('700', 29 * s, BODY);
+        const items = Array.isArray(body) ? body : [body];
+        items.filter(Boolean).forEach(it => {
+          const bullet = Array.isArray(body);
+          const lines = careWrap(g, it, w - (bullet ? 30 * s : 0));
+          lines.forEach((l, j) => {
+            yy += 38 * s;
+            if (draw) { font('700', 29 * s, BODY); g.fillStyle = INK; if (bullet && j === 0) g.fillText('•', x, yy); g.fillText(l, x + (bullet ? 30 * s : 0), yy); }
+          });
+        });
+        return yy + 10 * s;
+      };
+      y = section('Feeding', 'Your knock-knock call. Every call is one Knock.' + (k.snack ? ' Snack: ' + k.snack + '.' : ''));
+      y = section('Nook needs', k.nook_needs || ('The ' + c.nook.name + ' needs ' + (NOOK_CARE[c.nook.code] || 'a little attention') + '.'));
+      const colW = (IW - 30 * s) / 2;
+      const yd = section('Daily', k.daily, { w: colW }), yw = section('Weekly', k.weekly, { w: colW, x: X0 + colW + 30 * s });
+      y = Math.max(yd, yw);
+      y = section('House rule', k.house_rule);
+      if (k.warning_signs.length) y = section('Warning signs', k.warning_signs);
+
+      // mischief box
+      y += 22 * s;
+      const boxTop = y, padB = 24 * s;
+      font('700', 28 * s, BODY);
+      const dustyLines = careWrap(g, k.dusty, IW - 2 * padB);
+      const luckLines = k.backwards_luck.map(b => careWrap(g, b, IW - 2 * padB - 30 * s));
+      const boxH = padB + 34 * s + dustyLines.length * 36 * s + luckLines.reduce((a, l) => a + l.length, 0) * 36 * s + padB;
+      if (draw) {
+        g.fillStyle = ACC_SOFT; rr(X0, boxTop, IW, boxH, 22 * s); g.fill();
+        g.lineWidth = 4 * s; g.strokeStyle = ACC_INK; g.setLineDash([12 * s, 8 * s]); rr(X0, boxTop, IW, boxH, 22 * s); g.stroke(); g.setLineDash([]);
+      }
+      let by = boxTop + padB + 26 * s;
+      T('', 27, HEAD, ACC_INK, 'IF YOU FORGET IT: IT GOES DUSTY', X0 + padB, by);
+      dustyLines.forEach(l => { by += 36 * s; T('700', 28, BODY, INK, l, X0 + padB, by); });
+      luckLines.forEach(lines => lines.forEach((l, j) => {
+        by += 36 * s;
+        if (draw) { font('700', 28 * s, BODY); g.fillStyle = INK; if (j === 0) g.fillText('↺', X0 + padB, by); g.fillText(l, X0 + padB + 30 * s, by); }
+      }));
+      y = boxTop + boxH;
+      y = section('To wake it', '✊ ✊ ✊  Three knocks, then: ' + (k.wake_up || 'say sorry.'));
+
+      // footer: the call
+      y += 26 * s;
+      font('italic 700', 27 * s, BODY);
+      const callLines = careWrap(g, '“' + callLine + '”', IW);
+      callLines.forEach(l => { y += 36 * s; if (draw) { g.fillStyle = ACC_INK; g.textAlign = 'center'; g.fillText(l, X0 + IW / 2, y); g.textAlign = 'left'; } });
+      y += 34 * s;
+      if (draw) { font('900', 18 * s, BODY); g.fillStyle = MUTED; g.textAlign = 'center'; g.fillText('KNICKKNOCKS  ·  QUIRKY FLASH CHRONICLES  ·  MVANNP', X0 + IW / 2, y); g.textAlign = 'left'; }
+      return y;
+    };
+    let s = 1;
+    while (s > 0.5 && layout(s, false) > bottom) s -= 0.03;
+    // spare room goes to the drawing (post / story)
+    const extra = square ? 0 : Math.max(0, Math.min(360, bottom - layout(s, false) - 16));
+    layout(s, true, extra);
+    return cv;
+  }
+
+  function careImage(g, job, x, y, w, h, s) {
+    const im = job.imgEl;
+    g.save();
+    const r = 20 * s;
+    const path = () => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+    if (im) {   // frame hugs the drawing itself, so its own background isn't boxed inside another color
+      const sc = Math.min(w / im.naturalWidth, h / im.naturalHeight), dw = im.naturalWidth * sc, dh = im.naturalHeight * sc;
+      x += (w - dw) / 2; y += (h - dh) / 2; w = dw; h = dh;
+      path(); g.clip(); g.drawImage(im, x, y, w, h); g.restore(); g.save();
+      g.lineWidth = 4 * s; g.strokeStyle = '#2a1450'; path(); g.stroke();
+    } else {
+      g.lineWidth = 4 * s; g.strokeStyle = '#b9a98a'; g.setLineDash([14 * s, 10 * s]); path(); g.stroke(); g.setLineDash([]);
+      g.font = '700 ' + Math.round(24 * s) + 'px Nunito, Arial, sans-serif'; g.fillStyle = '#9a8a6a'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('draw me here', x + w / 2, y + h / 2); g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    }
+    g.restore();
+  }
+
+  function careZoneInner(job) {
+    if (!job.charm) return '';
+    const st = job.careState || 'none';
+    if (st === 'loading') return '<button class="care-btn" type="button" disabled>🧸 Writing its care card…</button><div class="care-hint">What it eats, what its Nook needs, and the mischief if you forget it.</div>';
+    if (st === 'failed') return `<button class="care-btn" type="button" data-act="make">🧸 Try the Care Card again</button><div class="care-hint">That didn't finish (${esc(job.careErr)}).</div>`;
+    if (st !== 'done') return '<button class="care-btn" type="button" data-act="make">🧸 Make Care Card</button><div class="care-hint">What it eats, what its Nook needs, and the mischief if you forget it. Downloads as a social-size image and adds a page to the PDF.</div>';
+    const size = job.careSize || 'post';
+    return `<div class="care-sizes">${Object.keys(CARE_SIZES).map(k => `<button class="pill-btn dark ${k === size ? 'active' : ''}" type="button" data-size="${k}">${CARE_SIZES[k].label}</button>`).join('')}
+        <button class="care-btn" type="button" data-act="download">⬇ Download PNG</button></div>
+      <img class="care-preview" alt="Care card for ${esc(job.charm.name)}">
+      <div class="care-hint">Also on its own page in the PDF, and in the text download.</div>`;
+  }
+
+  function renderCare(job) {
+    const box = job.el && job.el.querySelector('.care-zone');
+    if (!box) return;
+    box.innerHTML = careZoneInner(job);
+    const mk = box.querySelector('[data-act="make"]');
+    if (mk) mk.addEventListener('click', () => makeCare(job));
+    box.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { job.careSize = b.dataset.size; renderCare(job); }));
+    const dl = box.querySelector('[data-act="download"]');
+    if (dl) dl.addEventListener('click', () => downloadCare(job));
+    const img = box.querySelector('.care-preview');
+    if (img) img.src = drawCareCard(job, job.careSize || 'post').toDataURL('image/png');
+  }
+
+  function downloadCare(job) {
+    const size = job.careSize || 'post';
+    drawCareCard(job, size).toBlob(blob => {
+      if (!blob) return;
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = pdfSlug(job.charm.name) + '-care-card-' + size + '.png';
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+    }, 'image/png');
+  }
+
   // NAME MY DRAWING, step 1: look at the drawing and offer 5 luck-pun names.
   async function runDrawNames(job) {
     setStep(job, 'Looking at your drawing', STEP_MSGS.draw);
@@ -1456,7 +1759,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const fld = (k, v, wide) => v ? `<div class="fld${wide ? ' wide' : ''}"><div class="fld-k">${esc(k)}</div><div class="fld-v">${esc(v)}</div></div>` : '';
   const zap = (label, v, big) => v ? `<div class="out-zap${big ? ' big' : ''}"><div class="zap-label">${esc(label)}</div>${esc(v)}</div>` : '';
 
-  function renderSheet(job) { job.el.innerHTML = charmHTML(job); }
+  function renderSheet(job) { job.el.innerHTML = charmHTML(job); renderCare(job); }
 
   function numRowHTML(job) {
     return `<div class="num-row"><span class="num-badge">No. ${esc(job.charm.number)}</span><span class="num-note">birth number</span></div>`;
@@ -1545,6 +1848,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         ${roots}${trad}${crowded}${second}
         <div class="fld wide" style="margin-top:16px"><div class="fld-k">Name check</div><div id="nc-${job.id}">${nameCheckInner(job)}</div></div>
       </div>
+      <div class="out-card"><div class="out-pill pill-yellow">🧸 Care Card</div><div class="care-zone" id="care-${job.id}"></div></div>
     </section>`;
   }
 
@@ -1619,6 +1923,15 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     if (job.namesState === 'done' && job.names) {
       L.push('NAME CHECK (quick screen, not a trademark search):');
       job.names.results.forEach(x => L.push(' - ' + x.name + ': ' + x.status + (x.found ? ' — ' + x.found : '')));
+    }
+    if (job.care) {
+      const k = job.care; L.push(''); L.push('CARE CARD');
+      if (k.icons.length) L.push(k.icons.map(i => i.icon + ' ' + i.label).join('  ·  '));
+      add('Feeding', 'Your knock-knock call. Every call is one Knock.' + (k.snack ? ' Snack: ' + k.snack + '.' : ''));
+      add('Nook needs', k.nook_needs); add('Daily', k.daily); add('Weekly', k.weekly); add('House rule', k.house_rule);
+      if (k.warning_signs.length) { L.push('WARNING SIGNS:'); k.warning_signs.forEach(w => L.push(' - ' + w)); }
+      add('If you forget it (Dusty)', k.dusty); k.backwards_luck.forEach(b => L.push(' ↺ ' + b));
+      add('To wake it', 'Three knocks, then: ' + k.wake_up);
     }
     return L.join('\n');
   }
@@ -1855,10 +2168,19 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     K.font('mono', 7, C.muted); P.text('1/2 inch', M + 290 - 14, cy + r / 2 + 12);
   }
 
+  function pdfCare(K, job) {
+    const P = K.P, C = K.C;
+    K.newPage();
+    K.font('mono', 8.5, C.teal); P.text('CARE CARD  ·  No. ' + pdfSafe(job.charm.number) + '  ·  ' + pdfSafe(job.charm.name).toUpperCase(), K.M, K.y + 7); K.y += 20;
+    const maxH = K.BOTTOM - K.y - 6, w = Math.min(K.CW, maxH * 0.75), h = w / 0.75;
+    try { P.addImage(job.carePdf, 'JPEG', K.M + (K.CW - w) / 2, K.y, w, h); } catch (e) {}
+    K.y += h;
+  }
+
   function buildPDF(jobs, paper) {
     const C = PDF_THEMES[paper] || PDF_THEMES.dark;
     const K = pdfBegin(C);
-    jobs.forEach((job, i) => pdfCharm(K, job, i === 0));
+    jobs.forEach((job, i) => { pdfCharm(K, job, i === 0); if (job.carePdf) pdfCare(K, job); });
     K.footer('KNICKKNOCKS GENERATOR  ·  QUIRKY FLASH CHRONICLES  ·  STUDIO BITS OF GRAVITY  ·  MVANNP');
     return K.P;
   }
