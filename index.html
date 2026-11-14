@@ -245,6 +245,10 @@
   .knock-thumbs figure { margin: 0; text-align: center; font-size: 11px; opacity: 0.85; }
   .knock-thumbs img { width: 120px; height: 120px; object-fit: contain; border-radius: 10px; background: #f3e3b3; display: block; margin-bottom: 4px; }
   .care-zone { margin-top: 6px; }
+  .shine-zone { margin-top: 16px; padding-top: 14px; border-top: 1px dashed rgba(255,251,232,0.16); }
+  .shine-btn { font-family: 'Fredoka One', cursive; font-size: 16px; letter-spacing: 0.04em; background: linear-gradient(135deg, #ffe535, #ff7c2a); color: var(--dark-text); border: 3px solid var(--dark-text); border-radius: 100px; padding: 10px 22px; cursor: pointer; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); }
+  .shine-btn:disabled { opacity: 0.6; cursor: wait; }
+  .shine-tag { display: inline-block; font-family: 'Fredoka One', cursive; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; background: linear-gradient(135deg, #ffe535, #ff7c2a); color: var(--dark-text); border-radius: 100px; padding: 3px 12px; margin-left: 8px; vertical-align: middle; }
   .care-btn { font-family: 'Fredoka One', cursive; font-size: 16px; letter-spacing: 0.04em; background: var(--yellow); color: var(--dark-text); border: 3px solid var(--dark-text); border-radius: 100px; padding: 10px 22px; cursor: pointer; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); }
   .care-btn:disabled { opacity: 0.6; cursor: wait; }
   .care-hint { font-size: 13px; opacity: 0.75; margin-top: 8px; }
@@ -551,10 +555,6 @@
         <button class="pill-btn dark active" id="webBtn" type="button">🔎 Name check: ON</button>
         <div class="web-note" id="webNote">Checks the names against existing characters, mascots, toys and brands (2 quick web searches).</div>
       </div>
-      <div class="web-row">
-        <button class="pill-btn dark" id="opusBtn" type="button">✦ Best quality: OFF</button>
-        <div class="web-note" id="opusNote">Off = the everyday model (much cheaper). On = Opus writes the final charm, which costs more.</div>
-      </div>
     </div>
 
     <button class="generate-btn" id="generateBtn">🍀 MAKE A KNICKKNOCK! 🍀</button>
@@ -593,15 +593,16 @@
   // ── MODELS (lightweight version) ───────────────────────────────────
   // MODEL runs everything by default: sketches, drawing names, Knock Knock reads,
   // name checks, Care Cards and the charm itself.
-  // BEST_MODEL (Opus) is used ONLY for the final charm write, and ONLY when the
-  // "Best quality" switch is on. Opus thinks before it writes, and that thinking
-  // counts against max_tokens, so it gets a bigger ceiling (TOKENS.writeBest).
+  // BEST_MODEL (Opus) is used ONLY by the "Make it shine" button on a finished card:
+  // you pick a keeper, and Opus rewrites the whole card (name + birth number stay).
+  // Opus thinks before it writes, and that thinking counts against max_tokens,
+  // so it gets a bigger ceiling (TOKENS.shine).
   // To change a model, change ONLY these lines. Names: https://docs.claude.com/en/docs/about-claude/models
   const MODEL      = 'claude-sonnet-4-6';
   const BEST_MODEL = 'claude-opus-5-5';
   // One name check = at most 2 searches (one search can check several names at once).
   const NAME_TOOL  = { type: 'web_search_20250305', name: 'web_search', max_uses: 2 };
-  const TOKENS = { write: 1500, writeBest: 5000, quick: 3000, names: 1500, care: 1500 };
+  const TOKENS = { write: 1500, shine: 4000, quick: 3000, names: 1500, care: 1500 };
   const IMAGE_SIDE = 1024;   // pictures are shrunk to this before sending (smaller = fewer tokens)
 
   const COLLECTIONS = {
@@ -633,7 +634,6 @@
     nook: '',            // '' = let it choose
     inspo: [],
     web: true,           // name check
-    opus: false,         // "Best quality" switch: Opus writes the final charm
     paper: 'dark',
     series: '',          // optional design family; read from the box each run, never saved
     drawing: null,       // { dataUrl, w, h } for Name My Drawing — lives only on this page
@@ -743,7 +743,7 @@ LUCK-PUN NAMES: the name SOUNDS LIKE the good thing the charm brings — the way
 - NOT allowed: names that only describe (no "Hootpeek", "Perchbeam"), invented nonsense, Pokemon-style animal+element blends, "-son" endings, the Nook's name, existing brands or famous characters, and puns that need a footnote.
 - If the name is in the NAMES ALREADY USED list, find a different pun.
 - "pun" spells out what the name combines, e.g. "owl + always".
-CALL VERB: one playful verb taken from what the charm IS or does, used in its call (Owlways hoots, Happin pins, Keyper jingles, Aceorn flips, Tickety ticks).
+CALL VERB: one playful verb taken from what the charm IS or does, in its PLAIN form because it follows "me" in the call (hoot, pin, jingle, flip, tick, buff — never hoots or buffs): "Owlways, hoot me…".
 LUCK WORDS: in the call, the luck words name a clear kind of luck in 1-3 plain words — "good-news luck", "winning luck", "on-time luck", "found-it luck", "speak-up luck". Never a phrase or instruction (not "pull it close luck", not "bigger half luck").
 - Plain, warm English. Short sentences. Facts must be true; if unsure, leave them out.`;
 
@@ -920,7 +920,7 @@ Return ONLY this JSON (no code fences, no other text):
  "nook": "two-digit Nook code, e.g. 39",
  "quick": "What it does, one sentence under 20 words.",
  "hook": "${persp ? 'the fresh way of seeing the need, one sentence' : 'its endearing flaw and how that flaw is its luck, one sentence'}",
- "origin": "where it came from, 2-3 short sentences, folklore-flavored",
+ "origin": "where it came from, 2-3 short sentences: ONE specific, surprising detail about how it began and ONE small moment that shows who it is. Concrete and a little funny. No summing-up line at the end (not 'ever since', not 'and that is why')",
  "alt_names": ["3 alternate luck-pun names"]
 }`;
   }
@@ -1130,9 +1130,19 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 
+  // Safety net for the call: "buffs" → "buff", "pushes" → "push", "carries" → "carry".
+  // Leaves words like "toss", "focus" and "bless" alone.
+  function plainVerb(v) {
+    const w = String(v || '').trim(); if (!/^[a-z]+$/.test(w) || w.length < 4) return w;
+    if (/ies$/.test(w)) return w.slice(0, -3) + 'y';
+    if (/(sh|ch|x|ss|zz)es$/.test(w)) return w.slice(0, -2);
+    if (/s$/.test(w) && !/(ss|us|is)$/.test(w)) return w.slice(0, -1);
+    return w;
+  }
+
   // The affirmation people say to call their charm. Built here so the shape is always the same.
   function callingLine(c, key) {
-    const name = c.name || 'Knickknock', verb = (c.verb || 'knock').toLowerCase().replace(/[^a-z' -]/g, '').trim() || 'knock';
+    const name = c.name || 'Knickknock', verb = plainVerb((c.verb || 'knock').toLowerCase().replace(/[^a-z' -]/g, '').trim() || 'knock');
     if (key === 'persp') {
       const t = (c.tag || 'it').replace(/^(a\s+)?fresh look at\s+/i, '').replace(/[.!]+$/, '');
       return `Knock knock, ${name}, ${verb} me a fresh look at ${t}!`;
@@ -1324,12 +1334,11 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     // ONE call writes the charm. Text only: a drawing or Knock Knock pictures were already
     // read in step 1, so their description goes in instead of the images (fix 3).
     setStep(job, 'Designing your ' + C.one, STEP_MSGS.write);
-    const best = state.opus;
-    const body = { model: best ? BEST_MODEL : MODEL, max_tokens: best ? TOKENS.writeBest : TOKENS.write, messages: [{ role: 'user', content: fullPrompt(job) }] };
+    job.nookFixed = !!state.nook;   // Morgan picked the Nook himself, so "Make it shine" keeps it
+    const body = { model: MODEL, max_tokens: TOKENS.write, messages: [{ role: 'user', content: fullPrompt(job) }] };
     const res = await askOnce(body, hasCharmCore);
     clearInterval(job.timer);
     job.charm = normCharm(res.data, job.key);
-    if (best) job.note = 'Written with Best quality (Opus)';
     if (job.knock) job.ruleNotes = strList(res.data.rule_notes).slice(0, 5);
     if (job.chosen) {   // Name My Drawing / Knock Knock: the name Morgan picked always wins
       job.charm.name = job.chosen.name;
@@ -1472,6 +1481,73 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     c.calling = callingLine(c, job.key);
     rememberNames([newName]);
     if (job.care && job.careState === 'done') job.carePdf = drawCareCard(job, 'post').toDataURL('image/jpeg', 0.92);
+    renderSheet(job);
+    renderJump();
+  }
+
+  /* ════════════════════════════════════════════════════
+     MAKE IT SHINE — Opus rewrites a finished card Morgan likes.
+     Keeps: the name (already name-checked), the birth number, the other names,
+     Morgan's own decided details, and a Nook he picked himself.
+     ════════════════════════════════════════════════════ */
+  function shinePrompt(job) {
+    const c = job.charm, persp = job.key === 'persp';
+    const decided = job.knock ? [job.knock.notes, job.knock.fromShots].filter(Boolean).join('; ') : '';
+    return `${STYLE}
+
+${WORLD}
+
+${COLLECTION_BRIEF[job.key]}
+
+MAKE IT SHINE: Morgan liked this Knickknock and wants your very best version of it. Rewrite the whole card so it shines: sharper, funnier, more specific, more lovable, more like a character from a long-running series. Keep what already works; improve everything else.
+- THE NAME IS FIXED: "${c.name}"${c.pun ? ' (' + c.pun + ')' : ''}. Do not change or respell it.
+- ${job.nookFixed ? `Morgan chose its Nook: ${c.nook.code} ${c.nook.name}. Keep it.` : `It is in the ${c.nook.code} ${c.nook.name} for now; move it if another Nook fits its luck better (use the 44 Junk Nook only when nothing else fits).`}
+${decided ? '- Morgan\'s own decided details (keep them): ' + decided : ''}
+${job.seen ? '- Morgan\'s drawing shows (stay true to it, never invent features): ' + job.seen : ''}
+${job.series ? '- SERIES: it belongs to the "' + job.series + '" series.' : ''}
+
+THE CURRENT VERSION:
+- The need it answers: "${job.need}"
+- Charm title: ${c.charm_title}
+- Call: "${c.calling}"
+- What it does: ${c.quick}
+- ${persp ? 'Fresh perspective' : 'Its flaw is its luck'}: ${c.hook}
+- Origin: ${c.origin}
+
+Return ONLY this JSON (no code fences, no other text):
+{
+ "pronunciation": "e.g. OWL-ways",
+ "call_verb": "one-word verb in its plain form (hoot, not hoots)",
+ ${persp ? '"look_tag": "the situation to see freshly, 2-4 plain words"' : '"luck_tag": "1-3 plain words naming the kind of luck (goes before the word luck)"'},
+ "charm_title": "The ___ Charm",
+ "nook": "two-digit Nook code",
+ "quick": "What it does, one vivid sentence under 22 words.",
+ "hook": "${persp ? 'the fresh way of seeing the need, one or two sentences, true and kind' : 'its endearing flaw and exactly how that flaw is its luck, one or two sentences'}",
+ "origin": "where it came from, 3-5 short sentences: a specific, surprising beginning, a small scene that shows who it is, and one detail that ties it to its Nook. Folklore-flavored, concrete and funny. No summing-up line at the end."
+}`;
+  }
+
+  async function shineCharm(job) {
+    if (job.shineState === 'loading') return;
+    job.shineState = 'loading'; job.shineErr = '';
+    renderSheet(job);
+    try {
+      const res = await askOnce({ model: BEST_MODEL, max_tokens: TOKENS.shine, messages: [{ role: 'user', content: shinePrompt(job) }] },
+        d => !!(d && (pick(d, ['origin']) || pick(d, ['quick']))));
+      const n = normCharm(res.data, job.key), c = job.charm;
+      ['pronunciation', 'verb', 'tag', 'charm_title', 'quick', 'hook', 'origin'].forEach(k => { if (n[k]) c[k] = n[k]; });
+      const nk = nookBy(pick(res.data, ['nook']));
+      if (nk && !job.nookFixed && nk.code !== c.nook.code) {
+        c.nook = nk;
+        if (job.care) { job.care = null; job.carePdf = null; job.careState = 'none'; }   // its Care Card was about the old Nook
+      }
+      c.calling = callingLine(c, job.key);
+      c.polished = true;
+      job.shineState = 'done';
+    } catch (e) {
+      job.shineState = 'failed';
+      job.shineErr = e && e.timeout ? 'it took too long; tap to try once more' : (e && e.message) || 'unknown error';
+    }
     renderSheet(job);
     renderJump();
   }
@@ -1936,7 +2012,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
   // carrying over the settings. The sketch list stays put in this tab.
   function openSketchInNewTab(job, s) {
-    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web, opus: state.opus, series: state.series };
+    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series };
     const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
     return !!window.open(url, '_blank');
   }
@@ -1961,7 +2037,6 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       document.querySelectorAll('#inspoGrid .pill-btn').forEach(x => x.classList.toggle('active', state.inspo.includes(x.dataset.inspo)));
     }
     if (typeof p.web === 'boolean' && p.web !== state.web) toggleWeb();
-    if (typeof p.opus === 'boolean' && p.opus !== state.opus) toggleOpus();
   }
 
   // A tab opened by "Develop this one": restore the settings and build it.
@@ -1984,7 +2059,19 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const fld = (k, v, wide) => v ? `<div class="fld${wide ? ' wide' : ''}"><div class="fld-k">${esc(k)}</div><div class="fld-v">${esc(v)}</div></div>` : '';
   const zap = (label, v, big) => v ? `<div class="out-zap${big ? ' big' : ''}"><div class="zap-label">${esc(label)}</div>${esc(v)}</div>` : '';
 
-  function renderSheet(job) { job.el.innerHTML = charmHTML(job); renderCare(job); wireRename(job); }
+  function renderSheet(job) {
+    job.el.innerHTML = charmHTML(job); renderCare(job); wireRename(job);
+    const sb = job.el.querySelector('[data-act="shine"]');
+    if (sb) sb.addEventListener('click', () => shineCharm(job));
+  }
+
+  function shineZoneInner(job) {
+    const st = job.shineState || 'none';
+    if (st === 'loading') return '<button class="shine-btn" type="button" disabled>✦ Opus is polishing it…</button><div class="care-hint">Usually under a minute.</div>';
+    const again = job.charm.polished;
+    return `<button class="shine-btn" type="button" data-act="shine">✦ ${again ? 'Polish again with Opus' : 'Make it shine with Opus'}</button>
+      <div class="care-hint">${st === 'failed' ? 'That didn\'t finish (' + esc(job.shineErr) + '). Nothing was changed. ' : ''}Opus rewrites the whole card: the call, what it does, the flaw line and the origin. The name and birth number stay. Costs more, so save it for the keepers.</div>`;
+  }
 
   function numRowHTML(job) {
     return `<div class="num-row"><span class="num-badge">No. ${esc(job.charm.number)}</span><span class="num-note">birth number</span></div>`;
@@ -2007,14 +2094,15 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
         ${c.charm_title ? `<div class="charm-title">${esc(c.charm_title)}</div>` : ''}
         <div class="charm-nook">${c.nook.emoji} Lives in the ${esc(c.nook.name)} (${esc(c.nook.code)})${job.series ? ' · ' + esc(job.series) + ' series' : ''}</div>
         ${c.quick ? `<div class="charm-quick">${esc(c.quick)}</div>` : ''}
-        <div class="charm-seed">${job.knock ? 'Your own idea (Knock Knock) · luck: ' : job.fromDrawing ? 'Named from your drawing · luck: ' : (job.surprise ? 'Surprise need: ' : 'Your need: ')}${esc(job.need)}${job.develop ? ' · developed from a sketch' : ''}${job.note ? ' · ' + esc(job.note) : ''}</div>
+        <div class="charm-seed">${job.knock ? 'Your own idea (Knock Knock) · luck: ' : job.fromDrawing ? 'Named from your drawing · luck: ' : (job.surprise ? 'Surprise need: ' : 'Your need: ')}${esc(job.need)}${job.develop ? ' · developed from a sketch' : ''}${job.note ? ' · ' + esc(job.note) : ''}${c.polished ? ' · ✦ polished by Opus' : ''}</div>
       </div>
 
       <div class="out-card">
-        <div class="out-pill pill-pink">Origin</div>
+        <div class="out-pill pill-pink">Origin</div>${c.polished ? '<span class="shine-tag">✦ Polished by Opus</span>' : ''}
         <div class="out-title">Where It Came From</div>
         <div class="out-body"><p>${esc(c.origin || '—')}</p></div>
         ${zap(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook)}
+        <div class="shine-zone">${shineZoneInner(job)}</div>
       </div>
 
       <div class="out-card">
@@ -2081,7 +2169,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     add('Name', c.pun); add('Call it', c.calling); add('Need', job.need);
     add('Renamed from', c.renamedFrom); add('Series', job.series ? job.series + ' series' : ''); if (job.fromDrawing) L.push('(Named from Morgan\'s drawing)');
     if (job.knock) { L.push('(Morgan\'s own idea — Knock Knock)'); add('Your notes', job.knock.notes); add('From the old idea', job.knock.fromShots); (job.ruleNotes || []).forEach(n => L.push(' * Suggested update: ' + n)); }
-    add('', c.quick); L.push('');
+    add('', c.quick); if (c.polished) L.push('(Polished by Opus)'); L.push('');
     add('Origin', c.origin);
     add(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook);
     if (c.alt_names.length) add('Other names', c.alt_names.join(', '));
@@ -2275,7 +2363,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     }
     K.font('mono', 8, C.muted); K.need(14); P.text('Generated ' + pdfSafe(pdfPrettyDate()) + '  ·  need: ' + pdfSafe(job.need).slice(0, 80), M, K.y + 9); K.y += 16;
 
-    K.sectionHead('Origin', C.pink, 'where it came from');
+    K.sectionHead('Origin', C.pink, c.polished ? 'where it came from  ·  polished by Opus' : 'where it came from');
     K.para(c.origin, { size: 11, lh: 16 }); K.y += 5;
     K.labeled(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook, A);
 
@@ -2372,11 +2460,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       ? 'Checks the names against existing characters, mascots, toys and brands (2 quick web searches).'
       : 'Cheapest. The names are NOT checked — search them yourself before you publish.';
   }
-  function toggleOpus() {
-    state.opus = !state.opus;
-    $('opusBtn').classList.toggle('active', state.opus);
-    $('opusBtn').textContent = '✦ Best quality: ' + (state.opus ? 'ON' : 'OFF');
-  }
+
 
   $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${n.short}</small></button>`).join('');
   document.querySelectorAll('#nookGrid .nook-btn').forEach(b => b.addEventListener('click', () => setNook(state.nook === b.dataset.code ? '' : b.dataset.code)));
@@ -2393,7 +2477,6 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     state.inspo = Array.from(document.querySelectorAll('#inspoGrid .pill-btn.active')).map(x => x.dataset.inspo);
   }));
   $('webBtn').addEventListener('click', toggleWeb);
-  $('opusBtn').addEventListener('click', toggleOpus);
   function renderKnockList() {
     const box = $('knockList');
     box.innerHTML = state.knockImages.map(im => `<div class="knock-item"><img src="${im.dataUrl}" alt="">
