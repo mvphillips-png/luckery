@@ -421,6 +421,8 @@
   .sketch .sk-call { font-family: 'Boogaloo', cursive; font-size: 16px; color: var(--yellow); line-height: 1.3; }
   .charm-title { font-family: 'Fredoka One', cursive; font-size: 21px; color: var(--accent); margin-top: 6px; }
   .charm-nook { font-family: 'Boogaloo', cursive; font-size: 17px; color: var(--teal); margin-top: 4px; }
+  .charm-rooted { font-size: 13px; color: rgba(255,251,232,0.75); margin-top: 6px; line-height: 1.4; }
+  .charm-rooted b { color: var(--yellow); font-weight: 700; }
   .num-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 4px; }
   .num-badge {
     font-family: 'Fredoka One', cursive; font-size: 13px; letter-spacing: 0.08em; color: var(--dark-text);
@@ -538,7 +540,8 @@
     <div class="filter-grid" id="inspoGrid">
       <button class="pill-btn purple" data-inspo="Animals">🦔 Animals</button>
       <button class="pill-btn purple" data-inspo="Everyday objects">📎 Everyday objects</button>
-      <button class="pill-btn purple" data-inspo="Classic luck symbols">🍀 Luck symbols</button>
+      <button class="pill-btn purple" data-inspo="Classic luck symbols">🍀 Classic luck</button>
+      <button class="pill-btn purple" data-inspo="World luck traditions">🌍 World luck</button>
       <button class="pill-btn purple" data-inspo="Seeds & plants">🌱 Seeds &amp; plants</button>
       <button class="pill-btn purple" data-inspo="Weather & sky">☁️ Weather &amp; sky</button>
       <button class="pill-btn purple" data-inspo="Gravity & invisible forces">🌀 Gravity &amp; forces</button>
@@ -633,6 +636,8 @@
     on: { misfits: true, persp: false },
     nook: '',            // '' = let it choose
     inspo: [],
+    luckUsed: new Set(),   // traditions used this session (not saved), so they rotate
+    devLuck: null,         // a developed sketch keeps its tradition
     web: true,           // name check
     paper: 'dark',
     series: '',          // optional design family; read from the box each run, never saved
@@ -716,10 +721,221 @@ SIGNATURE MOVE: named with a doubled sound, One Piece style — "Tap-Tap Tumble"
 
 THE NEED: every charm answers one everyday need someone brings ("always running late", "keep the coffee fresh", "nervous about the SAT"). "charm_title" names it after that need in plain, warm words: "The Always-Late Charm", "The Fresh-Coffee Charm". Its power must fit the need specifically and playfully — the more specific and funny, the better.`;
 
+  /* ════════════════════════════════════════════════════
+     LUCK LISTS — real luck traditions, researched Nov 2026.
+     Format: "symbol | where | kind of luck | why it's lucky"
+     Only the facts written here are given to the model, so it can't invent history.
+     Left out on purpose: gods, deities and sacred religious objects (e.g. Ekeko,
+     the Seven Lucky Gods, Ganesha, shrine omamori, dreamcatchers, the swastika),
+     because a cute charm version of those would be disrespectful.
+     To add one: copy a line, keep the four parts separated by " | ".
+     ════════════════════════════════════════════════════ */
+  const CLASSIC_LUCK_RAW = [
+    // Western classics
+    "Horseshoe | Britain & Ireland | protection, luck at the door | hung over the door with the points up to hold the luck in; in Irish lore its iron keeps mischievous fairies away",
+    "Four-leaf clover | Ireland | rare-find luck | rare to find; each leaf is said to stand for faith, hope, love and luck",
+    "Rabbit's foot | England, Spain, the United States and beyond | pocket luck | one of the few charms known worldwide, carried in a pocket",
+    "Lucky penny | Britain & the United States | found-money luck | the old rhyme: find a penny, pick it up, and all day you'll have good luck",
+    "Wishbone | Britain & the United States | wish luck | two people pull the dried bone; whoever gets the bigger piece gets their wish",
+    "Acorn | England | good-health luck | the fruit of the oak, traditionally carried in a pocket to protect your health",
+    "Ladybug | Germany & Europe | landing luck | you're in luck if one lands on you; up to seven spots, and seven is a lucky number in German-speaking countries",
+    "Knocking on wood | the English-speaking world | keep-it-going luck | knock on wood to keep good luck from slipping away after you say something hopeful",
+    "Crossed fingers | Britain & former British colonies | hoping luck | cross your fingers when hoping for good luck",
+    "Black cat | Japan, Scotland, Italy and Latvia | lucky crossing | in these places a black cat is lucky, and sailors liked a black ship's cat to catch the rats",
+    "Chimney sweep | Germany, Poland & Britain | New Year and wedding luck | touching a sweep's sooty sleeve or gold buttons is lucky; sweeps kept the fire safe, and brides still hire them for luck",
+    "Silver sixpence in the shoe | Scotland & Britain | wedding and money luck | the end of the old rhyme 'something old, something new': a silver sixpence in the bride's shoe",
+    "White heather | Scotland | rare-find luck | rarer than purple heather; a sprig is hidden in a bride's bouquet or worn on a lapel",
+    "Wishing well | Ireland & Britain | wish luck | toss a coin in and make a wish",
+    "Billiken | the United States (1908) and Osaka, Japan | things-as-they-ought-to-be luck | an impish good-luck figure drawn by illustrator Florence Pretz in 1908; in Osaka people rub his feet for luck, and getting one as a gift is luckier than buying one",
+    "Distelfink | Pennsylvania Dutch country, USA | luck and happiness | the stylized goldfinch on hex signs painted on barns; two together mean double good luck",
+    "Barn star | Pennsylvania Dutch country, USA | good-luck farm | painted stars on barns were believed to bring farmers good luck",
+    "Lemon pig | the United States | absorbs-bad-luck luck | a lemon with matchstick legs, thought to be lucky or to soak up bad luck",
+    "Beemans gum | the United States | flying luck | early aviators, including Chuck Yeager, chewed it for luck before a flight",
+    // Japan
+    "Maneki-neko (beckoning cat) | Japan | customers-and-money luck | a raised right paw beckons money, a raised left paw beckons customers",
+    "Daruma doll | Japan | stick-with-it luck | a round, weighted doll that always rolls back upright; you paint in one eye when you set a goal and the other when you reach it",
+    "Fukurou (owl) | Japan | no-hardship luck | its name sounds like 'no hardship' and 'luck comes'",
+    "Kaeru (frog) | Japan | come-back luck | its name sounds like 'to return', so lost things, money and travelers come back",
+    "Tanuki | Japan | get-ahead-in-business luck | its name sounds like a phrase meaning 'to surpass others'",
+    "Saru (monkey) | Japan | leave-it-behind luck | its name sounds like 'to leave', so misfortune leaves",
+    "Tai (sea bream) | Japan | celebration luck | its name rhymes with 'medetai', meaning happy and auspicious",
+    "Koi carp | Japan | push-through luck | koi swim upstream against the current, so they stand for overcoming hardship and succeeding",
+    "Koinobori (carp streamers) | Japan | grow-up-strong luck | carp-shaped windsocks flown for children's strength and success",
+    "Kumade (bamboo rake) | Japan | business luck | shaped like a bear's paw; you rake fortune in like leaves",
+    "Lucky dice | Japan | lucky-roll luck | however they land they always 'show a number', which also sounds like 'to be lucky'",
+    "Akabeko (red cow) | Fukushima, Japan | kids-stay-well luck | a red papier-mâché cow with a bobbing head that guards children",
+    "Crane and tortoise | Japan | long-life luck | the crane is said to live a thousand years, the tortoise ten thousand",
+    "Kingyo (goldfish) | Japan | money luck | its lucky red and white colors attract wealth",
+    "Ise-ebi (spiny lobster) | Japan | long-life luck | its curved back looks like a happy old person's",
+    "Shisa | Okinawa, Japan | guarding luck | a lion-dog pair perched on rooftops and gates to keep bad luck out",
+    "Koma (spinning top) | Japan | things-go-smoothly luck | a well-spun top runs smooth and steady",
+    "Fukuwarai (laughing game) | Japan | laughter luck | a New Year game of placing a face's features blindfolded; laughter itself brings luck",
+    "Sensu (folding fan) | Japan | widening luck | it opens wider and wider from one point, like growing prosperity",
+    "Hatsuyume (first dream) | Japan | first-dream luck | dreaming of Mount Fuji, a hawk or an eggplant on the first night of the year is lucky",
+    "Momiji (maple leaf) | Japan | happiness-in-hand luck | a red maple leaf in your palm is said to bring happiness",
+    "Morijio (salt piles) | Japan | clean-start luck | small cones of salt set at entrances to keep bad things out",
+  ];
+
+  const WORLD_LUCK_RAW = [
+    // Germany, Austria and the Netherlands
+    "Glücksschwein (lucky marzipan pig) | Germany & Austria | money and New Year luck | 'Schwein gehabt' ('had a pig') means 'got lucky'; marzipan pigs are given at New Year",
+    "Fliegenpilz (red toadstool) | Germany | lucky-break luck | a lucky person is a 'Glückspilz', a 'luck mushroom'",
+    "Glückscent (lucky cent) | Germany | saving luck | a lucky coin, often tucked into a little glass pig",
+    "Bleigießen (pouring tin) | Germany, Austria & Finland | peek-at-the-future luck | at New Year, molten tin is dropped into cold water and the shape it makes is read for the year ahead",
+    "Lucky shards | Germany | silver-lining luck | 'Scherben bringen Glück': broken pottery brings luck",
+    "Ring-shaped treats | the Netherlands | full-circle luck | ring-shaped foods at New Year are thought to bring prosperity",
+    // Nordic
+    "Smashed plates on the doorstep | Denmark | friendship luck | old plates are smashed on friends' doors at New Year; the bigger the pile, the more friends and luck",
+    "Jumping off a chair at midnight | Denmark | leap-into-it luck | jumping into January keeps bad luck away",
+    "Hidden almond in rice pudding | Sweden, Norway, Finland & Denmark | finder's luck | whoever finds the one almond has luck all year",
+    "Acorn on the windowsill | Norway and old Norse folklore | safe-home luck | oaks were linked with thunder, so an acorn on the windowsill was said to keep lightning away",
+    "Little boar amulet | Northern Europe, long ago | brave luck | small metal boars were worn on helmets for luck",
+    // Central and Eastern Europe
+    "Carp scale in the wallet | Poland, Czechia, Slovakia, Austria & Croatia | money-all-year luck | a scale from the Christmas carp is kept for luck all year, often tucked in a wallet",
+    "Stork in flight | Poland | new-family luck | calling out to a stork you see flying is good luck",
+    "'Ni pukha ni pera' | Russia | exam luck | 'neither fur nor feather' is said before a test, and you answer 'to the devil!' to keep the luck",
+    "Bird dropping on your head | Russia and many other places | silly-surprise luck | getting pooped on by a bird means good luck is coming",
+    "Breaking a glass by accident | Russia | oops luck | an accidental broken glass is good luck",
+    "A gift purse with money inside | Russia | never-empty luck | a purse is never given empty, or the luck runs out",
+    "Pysanka (decorated egg) | Ukraine | protection luck | hand-dyed wax-resist eggs kept as good-luck charms",
+    "Martenitsa (red-and-white thread) | Bulgaria | health luck | worn from March 1 until you see a stork, a swallow or a blossoming tree, then tied to the tree to pass the luck on",
+    "Martenitsa under a stone | Bulgaria | see-what-comes luck | the creature found nearest it says how your year goes: a worm or an ant means a good, hardworking year",
+    "Mărțișor | Romania & Moldova | spring-friendship luck | a red-and-white string with a little charm, given on March 1; its name means 'little March'",
+    "Martis bracelet | Greece | first-sun luck | a red-and-white thread worn in March to protect against the first strong sun",
+    // Greece and Turkey
+    "Smashed pomegranate | Greece | abundance luck | a pomegranate is smashed at the door at New Year; the more seeds scatter, the luckier the year",
+    "Sea onion on the door | Crete & Greece | keeps-growing luck | the wild sea onion sprouts new leaves even pulled from the soil, so it hangs on the door for growth",
+    "Vasilopita coin | Greece | lucky-slice luck | a New Year cake with one hidden coin; whoever finds it has luck all year",
+    "Kalo podariko (good foot) | Greece | right-foot-first luck | the first visitor of the year steps in with the right foot",
+    "A heavy stone at the door | Greece | full-wallet luck | a heavy stone brought in at New Year means a wallet full of money",
+    "Nazar (blue eye bead) | Turkey, Greece, Armenia, Iran and beyond | protection luck | a blue glass eye that bounces back jealous stares",
+    // Italy, Spain, Portugal and France
+    "Cornicello (little red horn) | southern Italy | protection luck | a small horn of red coral, gold or silver worn against bad luck",
+    "Red underwear at New Year | Italy & Spain | love luck | wearing red on New Year's Eve brings luck in love",
+    "Lentils at midnight | Italy, Chile and much of Latin America | coin luck | lentils look like little coins, so a spoonful brings prosperity",
+    "Dolphin pendant | ancient Rome | safe-voyage luck | sailors believed dolphins beside the ship meant land was near and the trip would end safely",
+    "Bulla (child's locket) | ancient Rome | keep-kids-safe luck | a little locket worn by children to protect them",
+    "Twelve grapes at midnight | Spain, Mexico, Argentina & Chile | twelve-months luck | one grape on each chime of midnight, one for each month",
+    "Figa (hand charm) | Brazil, Portugal & Italy | gift luck | a little fist charm against bad energy; it only works if someone gives it to you",
+    "Muguet (lily of the valley) | France | spring happiness luck | a sprig given on May 1, a custom since King Charles IX in 1561; it's a 'porte-bonheur', a happiness-bringer",
+    "Nénette and Rintintin | France (World War I) | stick-together luck | a pair of tiny yarn dolls carried for protection",
+    // Britain and Ireland
+    "First-footing | Scotland | first-guest luck | the first visitor after midnight brings a small gift like shortbread so the household has luck all year",
+    "Two magpies | Ireland & Britain | joy luck | one magpie is sorrow, two are joy; saluting a lone magpie undoes the bad luck",
+    "Itchy left palm | Ireland | money-coming luck | an itchy left palm means money is on its way",
+    "Lucky halfpenny | Ireland | found-coin luck | finding a halfpenny brings good luck",
+    // The Americas
+    "Hoppin' John | the American South | money-and-luck luck | black-eyed peas for luck, greens 'the color of money' and golden cornbread on New Year's Day",
+    "Ojo de venado (deer's eye) | Mexico | protection luck | a big brown seed charm worn against bad luck",
+    "Rosca de Reyes charm | Mexico | lucky-slice luck | a ring-shaped sweet bread with a hidden charm; whoever gets it has luck",
+    "Worry dolls | Guatemala | sleep-easy luck | tiny dolls you tell your worries to and tuck under your pillow",
+    "Suitcase walk | Colombia, Mexico & Venezuela | travel luck | run around the block with an empty suitcase at midnight; the longer the walk, the farther you'll travel",
+    "Coin in the right shoe | Argentina & Colombia | money luck | a coin in your right shoe at a big celebration brings prosperity",
+    "Hidden coins and bills | Ecuador | money-everywhere luck | coins and bills are hidden all over the house at New Year",
+    "Yellow underwear | Peru, Chile, Ecuador & Mexico | money-and-happiness luck | new yellow underwear at New Year, and it has to be a gift",
+    "Pink underwear | Uruguay, Argentina & Brazil | happiness luck | the New Year color for joy",
+    "Torito de Pucará (rooftop bull) | Peru & Bolivia | balance luck | a pair of clay bulls on the roof keeps good and bad in balance and protects the family",
+    "Basil under the pillow | Peru | prosperity luck | sleeping with basil leaves under your pillow attracts prosperity",
+    "Wheat ears at home | Chile & Bolivia | abundance luck | a bundle of wheat kept at home means plenty",
+    "Seven waves | Brazil | wave luck | jump seven waves at midnight on New Year's Eve, dressed in white",
+    "Bay leaf in the pocket | Brazil | pocket luck | a bay leaf carried in your pocket brings luck for the year",
+    "Bucket of water out the window | Latin America | fresh-start luck | throwing water out at midnight sends the old year's bad luck away",
+    "Pulsera roja (red bracelet) | Latin America | baby-protection luck | a red thread bracelet for newborns",
+    // East Asia
+    "Bat | China | blessing luck | 'bat' sounds just like 'good fortune' (fu), so five bats mean five blessings",
+    "Fish | China | leftover-plenty luck | 'fish' sounds like 'surplus', so a little fish is left over at New Year",
+    "Double gourd | China | blessings-and-plenty luck | 'hulu' sounds like 'blessing and prosperity', and its many seeds mean a big family",
+    "Money toad | China | money-magnet luck | a three-legged toad sitting on coins with a coin in its mouth, set near the door",
+    "Upside-down 'fu' sign | China | luck-arrives luck | 'upside down' sounds like 'arrive', so an upside-down fortune sign says 'luck has arrived'",
+    "Tangerine | China | great-luck luck | the word for tangerine sounds like the word for good luck",
+    "Carp leaping the Dragon Gate | China | big-test luck | a carp that leaps the gate becomes a dragon, so it stands for success in exams",
+    "Red envelope | China | gift-of-luck luck | money given in red envelopes at New Year",
+    "Nian gao (year cake) | China | higher-every-year luck | its name sounds like 'higher every year'",
+    "Cricket in a box | China & the Philippines | singing luck | catching a live cricket and keeping it in a little box brings luck",
+    "Vase | China | peace luck | 'vase' sounds like 'peace'",
+    "Fa gao (rising cake) | China | get-rich luck | its name sounds like 'to get rich', and the cake rises and splits open",
+    "Pineapple | Taiwan | here-comes-luck luck | in Taiwanese Hokkien 'ong lai' sounds like 'prosperity comes'; people roll one into a new home",
+    "Pig dream | Korea | dream-money luck | dreaming of pigs means money is coming, the closer the pig the better; people buy a lottery ticket",
+    "Magpie at dawn | Korea | good-news luck | a magpie calling in the morning means a welcome guest or good news",
+    "Bokjori (lucky rice strainer) | Korea | scoop-up-luck luck | a little bamboo rice strainer hung up at New Year scoops in luck; the earlier you buy it, the more luck",
+    "Yeot (sticky taffy) | Korea | sticks-to-you luck | sticky rice taffy makes good luck stick, especially before exams",
+    "Laundry-soap gift | Korea | bubbling-over luck | soap is given as a gift because its bubbles mean bubbles of blessings",
+    "Poop dream | Korea | clear-the-way luck | dreaming of poop means obstacles are about to be cleared away",
+    // Southeast and South Asia
+    "Kumquat tree | Vietnam | plenty luck | 'quat' sounds like 'cat', meaning luck; the more fruit on the tree, the luckier the year",
+    "Peach and apricot blossoms | Vietnam | spring luck | pink peach blossoms in the north and yellow apricot blossoms in the south welcome luck at Tet",
+    "Five-fruit tray | Vietnam | full-table luck | a tray of five kinds of fruit wishing for peace and plenty",
+    "Watermelon | Vietnam | sweet-year luck | a watermelon with bright red flesh means a lucky, fruitful year",
+    "Twelve round fruits | the Philippines | coin luck | twelve round fruits, one per month, because round means coins; no spiky fruit, since spikes mean problems",
+    "Polka dots | the Philippines | money luck | round dots look like coins, so people wear polka dots at New Year",
+    "Jumping at midnight | the Philippines | grow-taller luck | kids jump as high as they can at midnight to grow taller",
+    "Jingling coins | the Philippines | money-noise luck | jingling coins in your pocket at midnight calls in money",
+    "Full rice jar | the Philippines | never-empty luck | rice, water and salt containers are filled to the top for the new year",
+    "Sticky rice cakes | the Philippines | stick-together luck | sticky rice keeps the family stuck together",
+    "Yusheng (prosperity toss) | Singapore & Malaysia | toss-it-higher luck | everyone tosses a salad together with chopsticks, and the higher the toss, the more luck",
+    "Nimbu-mirchi (lemon and chilies) | India | doorway-guard luck | one lemon and seven green chilies on a thread at the door soak up bad luck",
+    "Elephant with its trunk up | India & Thailand | luck-shower luck | an elephant figure with its trunk raised showers good fortune; facing the door brings luck in",
+    "Tetek melek masks | Indonesia | doorway luck | masks woven from coconut palm fronds hung above doorways to keep danger away",
+    // Iran, the Middle East and Africa
+    "Sabzeh (sprouts) | Iran (Nowruz) | fresh-start luck | wheat or lentil sprouts grown for spring and later tossed into running water to carry bad luck away",
+    "Goldfish in a bowl | Iran (Nowruz) | life-and-progress luck | a little goldfish on the New Year table",
+    "Nowruz coins | Iran | prosperity luck | coins on the New Year table for wealth",
+    "Painted eggs | Iran (Nowruz) | new-life luck | painted eggs for new life in spring",
+    "Hamsa (open hand) | the Middle East & North Africa | protection luck | an open-hand charm worn across many communities to keep bad luck away",
+    "Cowrie shell | West Africa | wealth luck | small shells that were once used as money",
+    "Sankofa bird | Ghana (Akan) | look-back-to-go-forward luck | an Adinkra symbol of wisdom rather than a luck charm: a bird looking backward, meaning learn from the past to move forward",
+    "Scarab beetle | ancient Egypt | fresh-start luck | the beetle that rolls its ball along was worn as a symbol of renewal and protection",
+    "Pinching the bride | Egypt | wedding luck | friends pinch the bride on her wedding day for good luck",
+    // Oceania
+    "Hei matau (fish hook) | Aotearoa New Zealand (Māori) | safe-travel-over-water luck | a carved fish-hook pendant for strength, plenty and safe travel across water; a cultural treasure (taonga), so keep it respectful",
+    "Koru (fern curl) | Aotearoa New Zealand (Māori) | new-beginnings luck | an unfurling fern frond for new beginnings, growth and hope",
+    // Armenia and the Caucasus
+    "New Year bread | Armenia | good-year luck | a big flat bread baked for luck in the new year",
+  ];
+
+  const parseLuck = raw => raw.map(line => {
+    const [s, p, l, w] = line.split(' | ').map(x => (x || '').trim());
+    return { s, p, l, w };
+  }).filter(e => e.s && e.w);
+  const LUCK_LISTS = { classic: parseLuck(CLASSIC_LUCK_RAW), world: parseLuck(WORLD_LUCK_RAW) };
+  const LUCK_CHIPS = { 'Classic luck symbols': 'classic', 'World luck traditions': 'world' };
+
+  // ── picking traditions ──
+  const luckText = e => `"${e.s}" from ${e.p} (${e.l}): ${e.w}`;
+  function luckShortlist(n, exclude) {
+    const pool = [].concat(...state.inspo.filter(x => LUCK_CHIPS[x]).map(x => LUCK_LISTS[LUCK_CHIPS[x]]));
+    if (!pool.length) return null;
+    const skip = new Set([...(exclude || []), ...state.luckUsed]);
+    let fresh = pool.filter(e => !skip.has(e.s));
+    if (fresh.length < n) fresh = pool.filter(e => !(exclude || []).includes(e.s));   // this session used most of them up
+    const a = fresh.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a.slice(0, n);
+  }
+  function matchLuck(rooted, cands) {
+    const r = String(rooted || '').toLowerCase().trim();
+    if (!r || !cands) return null;
+    return cands.find(e => e.s.toLowerCase() === r) || cands.find(e => r.includes(e.s.toLowerCase()) || e.s.toLowerCase().includes(r)) || null;
+  }
+  const LUCK_RULES = `- Build the creature FROM that tradition: make it the base or the signature feature, so you can see the tradition in the design.
+- The origin says where the tradition comes from.
+- Use only the facts given here about the tradition; do not add history you are not sure of.
+- A loving, playful homage: never mock the tradition or the people it belongs to.`;
+  function luckBlock(job) {
+    if (!job) return '';
+    if (job.luckFixed) return `ROOTED IN A REAL LUCK TRADITION (already chosen, keep it): ${luckText(job.luckFixed)}\n${LUCK_RULES}`;
+    const c = job.luckCands; if (!c || !c.length) return '';
+    const quick = job.mode === 'quick';
+    return `ROOT IT IN A REAL LUCK TRADITION. ${quick ? 'Give each sketch a DIFFERENT one of these, choosing the ones that fit the need best' : 'Pick the ONE that fits the need best'}:
+${c.map((e, i) => `${i + 1}. ${luckText(e)}`).join('\n')}
+${LUCK_RULES}
+Put the name of the one you used in "rooted", exactly as written inside its quotes.`;
+  }
+
   const STYLE = `You are designing ONE original Knickknock for Morgan Phillips (signature MVANNP), a cartoonist and illustrator who will draw it by hand over time. Right now the NAME matters most, then a SHORT origin; keep everything else to one line. Never use "Knickknock" as the creature's own name.
 
 CHARACTER STYLE: think Japanese mascot characters (yuru-chara) and collectible creatures like Pokemon — a lovable CHARACTER with a simple, iconic design. It can be a creature, an animal, or an everyday object stylized into a cute, charm-like creature. Not an abstract idea, not a realistic animal, not a microbe or mold.
-- Build it from ONE familiar base everyone recognizes: an animal (frog, mole, owl, snail, hedgehog...), a classic luck symbol (acorn, horseshoe, key, lucky penny, wishbone, clover, ladybug), or an ordinary thing (teacup, mitten, alarm clock, pebble, sock, toaster). Animal + object fusions are great.
+- Build it from ONE familiar base everyone recognizes: an animal (frog, mole, owl, snail, hedgehog...), a luck symbol from anywhere in the world, or an ordinary thing (teacup, mitten, alarm clock, pebble, sock, toaster). Animal + object fusions are great. Unless a tradition is given below, skip the overused Western luck symbols (horseshoe, four-leaf clover, rabbit's foot) and reach for something fresher.
 - Mascot proportions: one simple base shape, a big head, short limbs, small dot eyes, a tiny mouth, two or three flat colors plus one accent, and ONE signature feature you could spot from across a room. Simple enough to animate, draw in a comic strip, or sew as a plush.
 - Gentle, a little goofy, lovably awkward. Readable without words by a child anywhere.
 
@@ -773,7 +989,12 @@ The LUCKY THOUGHT is the headline takeaway.`
     const n = NOOKS.find(x => x.code === (state.nook || (job && job.nookCode)));
     return n ? `NOOK: it lives in the ${n.code} ${n.name}.` : 'NOOK: choose the Nook whose kind of luck matches the need (work, school, meetings, tests and ideas -> 99 Desk Nook; lateness and waiting -> 39 Clock Nook; coffee and mornings -> 43 Kettle Nook; new starts, travel and friends -> 93 Doorstep Nook; family, children and the people you love -> 94 Garden Nook; worries and sleep -> 34 Pillow Nook; and so on). Use the 44 Junk Nook ONLY when no other Nook fits at all.';
   }
-  const inspoLine = () => state.inspo.length ? `LEAN ON THESE INSPIRATION SOURCES for its base: ${state.inspo.join(', ')}.` : 'INSPIRATION: your choice — pick the most surprising fit.';
+  function inspoLine(job) {
+    const others = state.inspo.filter(x => !LUCK_CHIPS[x]), parts = [];
+    if (others.length) parts.push(`LEAN ON THESE INSPIRATION SOURCES for its base: ${others.join(', ')}.`);
+    const lb = luckBlock(job); if (lb) parts.push(lb);
+    return parts.length ? parts.join('\n') : 'INSPIRATION: your choice — pick the most surprising fit.';
+  }
   const avoidLine = () => { const n = recentNames(); return n.length ? `NAMES ALREADY USED (do not reuse or echo): ${n.join(', ')}.` : ''; };
 
   const NOOK_CARE = {
@@ -901,7 +1122,7 @@ ${COLLECTION_BRIEF[job.key]}
 ${needLine(job)}
 ${nookLine(job)}
 ${seriesLine()}
-${inspoLine()}
+${inspoLine(job)}
 ${avoidLine()}
 
 ${drawingBlock(job)}
@@ -920,7 +1141,7 @@ Return ONLY this JSON (no code fences, no other text):
  "nook": "two-digit Nook code, e.g. 39",
  "quick": "What it does, one sentence under 20 words.",
  "hook": "${persp ? 'the fresh way of seeing the need, one sentence' : 'its endearing flaw and how that flaw is its luck, one sentence'}",
- "origin": "where it came from, 2-3 short sentences: ONE specific, surprising detail about how it began and ONE small moment that shows who it is. Concrete and a little funny. No summing-up line at the end (not 'ever since', not 'and that is why')",
+${(job.luckCands || job.luckFixed) ? ' "rooted": "the tradition you used, exactly as named",\n' : ''} "origin": "where it came from, 2-3 short sentences: ONE specific, surprising detail about how it began and ONE small moment that shows who it is. Concrete and a little funny. No summing-up line at the end (not 'ever since', not 'and that is why')",
  "alt_names": ["3 alternate luck-pun names"]
 }`;
   }
@@ -963,13 +1184,13 @@ ${COLLECTION_BRIEF[job.key]}
 ${needLine(job)}
 ${nookLine(job)}
 ${seriesLine()}
-${inspoLine()}
+${inspoLine(job)}
 ${avoidLine()}
 
 QUICK SKETCH MODE: give 5 rough, DIFFERENT Knickknocks for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Every name is a luck-pun name, and all five puns are different.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"luck-pun name, e.g. Owlways","pun":"e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}","line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"luck-pun name, e.g. Owlways","pun":"e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(names, context) {
@@ -1245,10 +1466,14 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     }
     let need = $('needInput').value.trim(), surprise = false;
     if (!need) { need = drawNeed(); surprise = true; }   // both charms share the same surprise need
-    return ['misfits', 'persp'].filter(k => state.on[k]).map(key => ({
-      id: key, key, need, surprise, develop: state.develop, devName: state.devName, mode: state.mode, status: 'pending',
-      charm: null, sketches: null, names: null, namesState: 'none', note: ''
-    }));
+    const taken = [];
+    return ['misfits', 'persp'].filter(k => state.on[k]).map(key => {
+      const cands = state.devLuck ? null : luckShortlist(state.mode === 'quick' ? 8 : 5, taken);
+      (cands || []).forEach(e => taken.push(e.s));
+      return { id: key, key, need, surprise, develop: state.develop, devName: state.devName, mode: state.mode, status: 'pending',
+        luckFixed: state.devLuck || null, luckCands: cands, luck: null,
+        charm: null, sketches: null, names: null, namesState: 'none', note: '' };
+    });
   }
 
   async function generate() {
@@ -1263,7 +1488,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     state.running = true;
     $('generateBtn').disabled = true;
     state.jobs = makeJobs();
-    state.develop = ''; state.devName = '';   // a sketch hand-off is used once
+    state.develop = ''; state.devName = ''; state.devLuck = null;   // a sketch hand-off is used once
     $('sheets').innerHTML = '';
     $('outError').style.display = 'none';
     $('actionRow').style.display = 'none';
@@ -1339,6 +1564,8 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     const res = await askOnce(body, hasCharmCore);
     clearInterval(job.timer);
     job.charm = normCharm(res.data, job.key);
+    job.luck = job.luckFixed || matchLuck(pick(res.data, ['rooted']), job.luckCands);
+    if (job.luck) state.luckUsed.add(job.luck.s);
     if (job.knock) job.ruleNotes = strList(res.data.rule_notes).slice(0, 5);
     if (job.chosen) {   // Name My Drawing / Knock Knock: the name Morgan picked always wins
       job.charm.name = job.chosen.name;
@@ -1505,6 +1732,7 @@ MAKE IT SHINE: Morgan liked this Knickknock and wants your very best version of 
 ${decided ? '- Morgan\'s own decided details (keep them): ' + decided : ''}
 ${job.seen ? '- Morgan\'s drawing shows (stay true to it, never invent features): ' + job.seen : ''}
 ${job.series ? '- SERIES: it belongs to the "' + job.series + '" series.' : ''}
+${job.luck ? '- ROOTED IN A REAL LUCK TRADITION (keep it, and use only these facts about it): ' + luckText(job.luck) : ''}
 
 THE CURRENT VERSION:
 - The need it answers: "${job.need}"
@@ -1989,8 +2217,10 @@ Return ONLY this JSON (no code fences, no other text):
       nook: nookBy(pick(s, ['nook'])) || nookBy(state.nook) || NOOKS[4],
       quick: str(pick(s, ['quick', 'one_liner'])), hook: str(pick(s, ['hook', 'flaw', 'perspective'])),
       look: str(pick(s, ['look', 'base'])), move: str(pick(s, ['move', 'signature_move'])), line: str(pick(s, ['line', 'ritual', 'thought'])),
-      verb: str(pick(s, ['call_verb', 'verb'])), tag: str(pick(s, job.key === 'persp' ? ['look_tag', 'luck_tag'] : ['luck_tag', 'look_tag']))
+      verb: str(pick(s, ['call_verb', 'verb'])), tag: str(pick(s, job.key === 'persp' ? ['look_tag', 'luck_tag'] : ['luck_tag', 'look_tag'])),
+      luck: matchLuck(pick(s, ['rooted']), job.luckCands)
     })).filter(s => s.rawName);
+    job.sketches.forEach(s => { if (s.luck) state.luckUsed.add(s.luck.s); });
     job.sketches.forEach(s => { s.name = tidyName(s.rawName) || 'Unnamed'; s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
     rememberNames(job.sketches.map(s => s.name));
     job.status = 'done';
@@ -2006,19 +2236,19 @@ Return ONLY this JSON (no code fences, no other text):
   }
 
   function sketchText(s) {
-    return `${s.name}${s.pun ? ' (' + s.pun + ')' : ''} — ${s.charm_title}, ${s.nook.code} ${s.nook.name}. Call: ${s.calling} ${s.quick} ${s.hook ? 'Hook: ' + s.hook + '.' : ''} ${s.look ? 'Look: ' + s.look + '.' : ''} ${s.move ? 'Move: ' + s.move + '.' : ''} ${s.line ? 'Line: ' + s.line + '.' : ''}`.replace(/\s+/g, ' ').trim();
+    return `${s.name}${s.pun ? ' (' + s.pun + ')' : ''} — ${s.charm_title}, ${s.nook.code} ${s.nook.name}. Call: ${s.calling} ${s.quick} ${s.hook ? 'Hook: ' + s.hook + '.' : ''} ${s.look ? 'Look: ' + s.look + '.' : ''} ${s.move ? 'Move: ' + s.move + '.' : ''} ${s.line ? 'Line: ' + s.line + '.' : ''} ${s.luck ? 'Rooted in: ' + s.luck.s + '.' : ''}`.replace(/\s+/g, ' ').trim();
   }
 
   // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
   // carrying over the settings. The sketch list stays put in this tab.
   function openSketchInNewTab(job, s) {
-    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series };
+    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series, luck: s.luck || null };
     const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
     return !!window.open(url, '_blank');
   }
 
   function developSketch(job, s) {
-    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code });
+    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, luck: s.luck || null });
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(generate, 350);
   }
@@ -2030,6 +2260,8 @@ Return ONLY this JSON (no code fences, no other text):
     $('needInput').value = String(p.need || '').slice(0, 300);
     state.develop = String(p.develop || '').slice(0, 700);
     state.devName = String(p.devName || '').slice(0, 40);
+    const L = p.luck;
+    state.devLuck = (L && typeof L === 'object' && L.s && L.w) ? { s: String(L.s).slice(0, 80), p: String(L.p || '').slice(0, 80), l: String(L.l || '').slice(0, 60), w: String(L.w).slice(0, 300) } : null;
     if (typeof p.series === 'string') $('seriesInput').value = p.series.slice(0, 40);
     setNook(p.nook && NOOKS.some(n => n.code === p.nook) ? p.nook : '');
     if (Array.isArray(p.inspo)) {
@@ -2093,6 +2325,7 @@ Return ONLY this JSON (no code fences, no other text):
         <div class="calling"><div class="calling-label">Call it · knock twice on wood</div>“${esc(c.calling)}”</div>
         ${c.charm_title ? `<div class="charm-title">${esc(c.charm_title)}</div>` : ''}
         <div class="charm-nook">${c.nook.emoji} Lives in the ${esc(c.nook.name)} (${esc(c.nook.code)})${job.series ? ' · ' + esc(job.series) + ' series' : ''}</div>
+        ${job.luck ? `<div class="charm-rooted">🌍 Rooted in <b>${esc(job.luck.s)}</b> · ${esc(job.luck.p)}</div>` : ''}
         ${c.quick ? `<div class="charm-quick">${esc(c.quick)}</div>` : ''}
         <div class="charm-seed">${job.knock ? 'Your own idea (Knock Knock) · luck: ' : job.fromDrawing ? 'Named from your drawing · luck: ' : (job.surprise ? 'Surprise need: ' : 'Your need: ')}${esc(job.need)}${job.develop ? ' · developed from a sketch' : ''}${job.note ? ' · ' + esc(job.note) : ''}${c.polished ? ' · ✦ polished by Opus' : ''}</div>
       </div>
@@ -2139,6 +2372,7 @@ Return ONLY this JSON (no code fences, no other text):
         <div class="sk-call">“${esc(s.calling)}”</div>
         <div class="sk-check"></div>
         <div class="sk-line"><b>Nook</b>${s.nook.emoji} ${esc(s.nook.name)} (${esc(s.nook.code)})</div>
+        ${s.luck ? `<div class="sk-line"><b>Rooted in</b>🌍 ${esc(s.luck.s)} · ${esc(s.luck.p)}</div>` : ''}
         <div class="sk-quick">${esc(s.quick)}</div>
         ${s.hook ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Fresh perspective' : 'Flaw → superpower'}</b>${esc(s.hook)}</div>` : ''}
         ${s.look ? `<div class="sk-line"><b>Look</b>${esc(s.look)}</div>` : ''}
@@ -2167,6 +2401,7 @@ Return ONLY this JSON (no code fences, no other text):
     L.push([c.charm_title, COLLECTIONS[job.key].one, c.nook.code + ' ' + c.nook.name].filter(Boolean).join(' · '));
     L.push('==============================');
     add('Name', c.pun); add('Call it', c.calling); add('Need', job.need);
+    if (job.luck) add('Rooted in', job.luck.s + ' (' + job.luck.p + '): ' + job.luck.w);
     add('Renamed from', c.renamedFrom); add('Series', job.series ? job.series + ' series' : ''); if (job.fromDrawing) L.push('(Named from Morgan\'s drawing)');
     if (job.knock) { L.push('(Morgan\'s own idea — Knock Knock)'); add('Your notes', job.knock.notes); add('From the old idea', job.knock.fromShots); (job.ruleNotes || []).forEach(n => L.push(' * Suggested update: ' + n)); }
     add('', c.quick); if (c.polished) L.push('(Polished by Opus)'); L.push('');
@@ -2231,6 +2466,7 @@ Return ONLY this JSON (no code fences, no other text):
       .replace(/←/g, '<-')
       .replace(/ /g, ' ')
       .replace(/[\x80-\x9F]/g, '')
+      .replace(/[^\x00-\xFF]/g, ch => ch.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
       .replace(/[^\x00-\xFF]/g, '')
       .replace(/[ \t]{2,}/g, ' ')
       .replace(/ +([.,!?;])/g, '$1')
@@ -2363,6 +2599,7 @@ Return ONLY this JSON (no code fences, no other text):
     }
     K.font('mono', 8, C.muted); K.need(14); P.text('Generated ' + pdfSafe(pdfPrettyDate()) + '  ·  need: ' + pdfSafe(job.need).slice(0, 80), M, K.y + 9); K.y += 16;
 
+    if (job.luck) K.labeled('Rooted in a real luck tradition', job.luck.s + ' (' + job.luck.p + ') -- ' + job.luck.w, C.teal);
     K.sectionHead('Origin', C.pink, c.polished ? 'where it came from  ·  polished by Opus' : 'where it came from');
     K.para(c.origin, { size: 11, lh: 16 }); K.y += 5;
     K.labeled(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook, A);
