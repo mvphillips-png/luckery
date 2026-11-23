@@ -1033,6 +1033,7 @@ The LUCKY THOUGHT is the headline takeaway.`
       ? `THE NEED (surprise pick — make the most of it): "${job.need}"`
       : `THE NEED Morgan typed: "${job.need}"`;
     if (job.develop) t += `\nDEVELOP THIS SKETCH into the full charm (keep its name, Nook and idea): ${job.develop}`;
+    if (job.develop && job.devName) t += `\nTHE NAME IS FIXED: "${job.devName}"${job.devPun ? ' (' + job.devPun + ')' : ''}. Use exactly that name; do not invent a new one.`;
     return t;
   }
   function seriesLine() {
@@ -1049,7 +1050,7 @@ The LUCKY THOUGHT is the headline takeaway.`
     const lb = luckBlock(job); if (lb) parts.push(lb);
     return parts.length ? parts.join('\n') : 'INSPIRATION: your choice — pick the most surprising fit.';
   }
-  const avoidLine = () => { const n = recentNames(); return n.length ? `NAMES ALREADY USED (do not reuse or echo): ${n.join(', ')}.` : ''; };
+  const avoidLine = job => { const dev = String((job && job.devName) || '').toLowerCase(); const n = recentNames().filter(x => x.toLowerCase() !== dev); return n.length ? `NAMES ALREADY USED (do not reuse or echo): ${n.join(', ')}.` : ''; };
 
   const NOOK_CARE = {
     '33': 'daylight and a clear view out', '34': 'quiet, and a soft spot to nap', '39': 'a steady routine: same time, same place',
@@ -1177,7 +1178,7 @@ ${needLine(job)}
 ${nookLine(job)}
 ${seriesLine()}
 ${inspoLine(job)}
-${avoidLine()}
+${avoidLine(job)}
 
 ${drawingBlock(job)}
 ${knockBlock(job)}
@@ -1239,7 +1240,7 @@ ${needLine(job)}
 ${nookLine(job)}
 ${seriesLine()}
 ${inspoLine(job)}
-${avoidLine()}
+${avoidLine(job)}
 
 QUICK SKETCH MODE: give 5 rough, DIFFERENT Klinkaroos for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Every name is a luck-pun name, and all five puns are different.
 
@@ -1524,7 +1525,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     return ['misfits', 'persp'].filter(k => state.on[k]).map(key => {
       const cands = state.devLuck ? null : luckShortlist(state.mode === 'quick' ? 8 : 5, taken);
       (cands || []).forEach(e => taken.push(e.s));
-      return { id: key, key, need, surprise, develop: state.develop, devName: state.devName, mode: state.mode, status: 'pending',
+      return { id: key, key, need, surprise, develop: state.develop, devName: state.devName, devPun: state.devPun, mode: state.mode, status: 'pending',
         luckFixed: state.devLuck || null, luckCands: cands, luck: null,
         charm: null, sketches: null, names: null, namesState: 'none', note: '' };
     });
@@ -1542,7 +1543,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     state.running = true;
     $('generateBtn').disabled = true;
     state.jobs = makeJobs();
-    state.develop = ''; state.devName = ''; state.devLuck = null;   // a sketch hand-off is used once
+    state.develop = ''; state.devName = ''; state.devPun = ''; state.devLuck = null;   // a sketch hand-off is used once
     $('sheets').innerHTML = '';
     $('outError').style.display = 'none';
     $('actionRow').style.display = 'none';
@@ -1621,6 +1622,16 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     job.luck = job.luckFixed || matchLuck(pick(res.data, ['rooted']), job.luckCands);
     if (job.luck) state.luckUsed.add(job.luck.s);
     if (job.knock) job.ruleNotes = strList(res.data.rule_notes).slice(0, 5);
+    if (!job.chosen && job.develop && job.devName) {   // Develop this one: the sketch keeps its name
+      const fixed = tidyName(job.devName);
+      if (fixed && fixed.toLowerCase() !== job.charm.name.toLowerCase()) {
+        const rx = new RegExp('\\b' + job.charm.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+        ['quick', 'charm_title', 'hook', 'origin'].forEach(k => { job.charm[k] = String(job.charm[k] || '').replace(rx, fixed); });
+        job.charm.name = fixed; job.charm.pronunciation = ''; job.charm.pun = job.devPun || '';
+      }
+      else if (job.devPun && !job.charm.pun) job.charm.pun = job.devPun;
+      job.charm.alt_names = job.charm.alt_names.filter(n => n.toLowerCase() !== fixed.toLowerCase());
+    }
     if (job.chosen) {   // Name My Drawing / Knock Knock: the name Morgan picked always wins
       job.charm.name = job.chosen.name;
       job.charm.pun = job.chosen.pun || job.charm.pun;
@@ -2640,13 +2651,13 @@ clear = no notable match found. similar = it echoes a known line (same key words
   // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
   // carrying over the settings. The sketch list stays put in this tab.
   function openSketchInNewTab(job, s) {
-    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series, luck: s.luck || null };
+    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, devPun: s.pun, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series, luck: s.luck || null };
     const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
     return !!window.open(url, '_blank');
   }
 
   function developSketch(job, s) {
-    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, nook: s.nook.code, luck: s.luck || null });
+    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, devPun: s.pun, nook: s.nook.code, luck: s.luck || null });
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(generate, 350);
   }
@@ -2658,6 +2669,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
     $('needInput').value = String(p.need || '').slice(0, 300);
     state.develop = String(p.develop || '').slice(0, 700);
     state.devName = String(p.devName || '').slice(0, 40);
+    state.devPun = String(p.devPun || '').slice(0, 120);
     const L = p.luck;
     state.devLuck = (L && typeof L === 'object' && L.s && L.w) ? { s: String(L.s).slice(0, 80), p: String(L.p || '').slice(0, 80), l: String(L.l || '').slice(0, 60), w: String(L.w).slice(0, 300) } : null;
     if (typeof p.series === 'string') $('seriesInput').value = p.series.slice(0, 40);
