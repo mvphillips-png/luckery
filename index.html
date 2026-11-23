@@ -1000,20 +1000,21 @@ QUALITY BAR:
 - The origin should feel like it belongs in a long-running series: where it came from, in two or three short sentences.
 - No resemblance to existing characters (any Pokemon, Kumamon, Funassyi, Hello Kitty and Sanrio, Rilakkuma, Sumikko Gurashi, Moomins, Totoro, Kirby, Smurfs, Care Bears, Muppets, One Piece characters, etc.) — learn from the style, never copy. A name must not be a famous name with a letter changed.
 
-NAMING — THE MOST IMPORTANT DETAIL. People CALL their charm out loud with a short affirmation, so every name must pass the say-it-out-loud test:
+NAMING — THE MOST IMPORTANT DETAIL. Every charm has a TWO-PART NAME: a FIRST NAME (the luck pun) + a SECOND NAME (a family-style name), e.g. "Owlways Brightwatch", "Ketterix Lovestar". People CALL their charm out loud by its FIRST NAME, so the first name must pass the say-it-out-loud test:
   Lucky Misfit:      "Knock knock, Owlways, hoot me some watched-over luck!"
   Perspective Maker: "Knock knock, Aceorn, flip me a fresh look at test day!"
-LUCK-PUN NAMES: the name SOUNDS LIKE the good thing the charm brings — the way Japan's lucky owl, "fukurou", sounds like "luck comes" and "no hardship". One word that lets you hear TWO things at once:
+FIRST NAME = A LUCK PUN: it SOUNDS LIKE the good thing the charm brings — the way Japan's lucky owl, "fukurou", sounds like "luck comes" and "no hardship". One word that lets you hear TWO things at once:
   (a) the picturable thing it IS (owl, pin, key, acorn, clock, mug...) and
   (b) a word or phrase for the LUCK it brings (always, happen, keeper, ace, all good...).
   Examples: Owlways (owl + always: always watching) · Happin (happen + pin: good things happen) · Keyper (key + keeper) · Aceorn (ace + acorn) · Tickety (tickety-boo, "all good", for an alarm clock).
 - Say it out loud: the pun must be heard instantly, without explaining it.
-- Spelled so a 7-year-old can read it; bend spelling only as much as the pun needs. 2-3 syllables, about 9 letters or fewer.
+- EASY TO READ: each part is 2-3 syllables, spelled the way it sounds, with no silent letters or odd letter clusters, so a 7-year-old can sound it out. Bend spelling only as much as the pun needs. (No letter limit, but shorter is still better.)
 - You must be able to picture the thing AND hear the luck.
 - NOT allowed: names that only describe (no "Hootpeek", "Perchbeam"), invented nonsense, Pokemon-style animal+element blends, "-son" endings, the Nook's name, existing brands or famous characters, and puns that need a footnote.
-- If the name is in the NAMES ALREADY USED list, find a different pun.
-- "pun" spells out what the name combines, e.g. "owl + always".
-CALL VERB: one playful verb taken from what the charm IS or does, in its PLAIN form because it follows "me" in the call (hoot, pin, jingle, flip, tick, buff — never hoots or buffs): "Owlways, hoot me…".
+- If a name or its first name is in the NAMES ALREADY USED list, find a different pun.
+- "pun" spells out what the FIRST name combines, e.g. "owl + always".
+SECOND NAME: one word that adds personality or names its luck, like a family name in a storybook: Brightwatch, Lovestar, Puddlefoot, Kindlecup. It may join two plain words, as long as it reads easily. No famous surnames, no brands, no "-son" endings, and it must not repeat the first name's pun.
+CALL VERB: one playful ACTION verb taken from what the charm IS or does: a real verb you can do (hoot, stir, whistle, pour, pin, jingle, flip, tick, buff), never a noun turned into a verb (not "kettle", "owl", "clock"). Use its PLAIN form because it follows "me" in the call (hoot, never hoots): "Owlways, hoot me…".
 LUCK WORDS: in the call, the luck words name a clear kind of luck in 1-3 plain words — "good-news luck", "winning luck", "on-time luck", "found-it luck", "speak-up luck". Never a phrase or instruction (not "pull it close luck", not "bigger half luck").
 - Plain, warm English. Short sentences. Facts must be true; if unsure, leave them out.`;
 
@@ -1050,7 +1051,7 @@ The LUCKY THOUGHT is the headline takeaway.`
     const lb = luckBlock(job); if (lb) parts.push(lb);
     return parts.length ? parts.join('\n') : 'INSPIRATION: your choice — pick the most surprising fit.';
   }
-  const avoidLine = job => { const dev = String((job && job.devName) || '').toLowerCase(); const n = recentNames().filter(x => x.toLowerCase() !== dev); return n.length ? `NAMES ALREADY USED (do not reuse or echo): ${n.join(', ')}.` : ''; };
+  const avoidLine = job => { const dev = String((job && job.devName) || '').toLowerCase(); const n = recentNames().filter(x => x.toLowerCase() !== dev); return n.length ? `NAMES ALREADY USED (do not reuse or echo these, or their first names): ${n.join(', ')}.` : ''; };
 
   const NOOK_CARE = {
     '33': 'daylight and a clear view out', '34': 'quiet, and a soft spot to nap', '39': 'a steady routine: same time, same place',
@@ -1131,7 +1132,7 @@ ${job.images.length ? knockImageRules(job.images) : '- No pictures.'}
 - ${nookLine(job)}
 ${seriesLine()}
 
-Steps: describe each picture (only what is really there), copy out every detail from screenshots, ${job.name ? 'and do NOT invent names' : 'look for a name in the screenshots, and if none, give 5 DIFFERENT luck-pun names that fit'}.
+Steps: describe each picture (only what is really there), copy out every detail from screenshots, ${job.name ? 'and do NOT invent names' : 'look for a name in the screenshots, and if none, give 5 DIFFERENT two-part names (luck-pun first name + second name) that fit'}.
 
 Return ONLY this JSON (no code fences):
 {"seen":[{"image":1,"what":"1-2 sentences, only what is there"}],
@@ -1141,20 +1142,20 @@ Return ONLY this JSON (no code fences):
  "need":"the everyday need it's for, plain words",
  "why":"one sentence: what points to this luck",
  "nook":"two-digit Nook code",
- "names":${job.name ? '[]' : '[{"name":"luck-pun name","pun":"e.g. happy + petal","charm_title":"The ___ Charm","quick":"what it does, under 18 words","call_verb":"one-word verb","luck_tag":"1-3 plain words","look_tag":"2-4 words"}]  (leave [] if name_found is set)'}}`;
+ "names":${job.name ? '[]' : '[{"name":"two-part name, e.g. Happin Brightpetal","pun":"what the first name combines, e.g. happy + petal","charm_title":"The ___ Charm","quick":"what it does, under 18 words","call_verb":"one-word verb","luck_tag":"1-3 plain words","look_tag":"2-4 words"}]  (leave [] if name_found is set)'}}`;
   }
 
   function knockBlock(job) {
     const k = job.knock; if (!k) return '';
     return `MORGAN'S OWN IDEA (Knock Knock). What is below is ALREADY DECIDED: keep it exactly and only fill in what is missing.
-- THE NAME IS FIXED: "${job.chosen.name}". Use exactly that name, even if it breaks today's naming rules.
+- THE NAME IS FIXED: "${job.chosen.name}". Use exactly that name as given (one word or two), even if it breaks today's naming rules. Do not add a second name to it.
 ${k.notes ? '- Morgan\'s notes: ' + k.notes : ''}
 ${k.fromShots ? '- Details from screenshots of his older idea: ' + k.fromShots : ''}
 ${k.seen ? '- What the pictures show: ' + k.seen : ''}
 ${k.images.some(im => im.tag === 'photo') ? '- The photo of a real object is the BASE: the charm is a cute, stylized creature version of it.' : ''}
 - The luck it brings: "${job.need}".
-- "alt_names": give 3 fresh luck-pun names in case "${job.chosen.name}" is already taken.
-- Add one more field, "rule_notes": a list of short notes, one for each already-decided detail that breaks today's rules (e.g. the name isn't a luck pun, it had no Nook), each with a suggested update. Use [] if nothing breaks a rule. Never change the decided details themselves.`;
+- "alt_names": give 3 fresh two-part names in case "${job.chosen.name}" is already taken.
+- Add one more field, "rule_notes": AT MOST 2 short notes, ONLY about details Morgan decided (his name, his notes, his screenshots), and ONLY for a real problem: a typo or spelling mismatch, two of his details contradicting each other, or a missing luck or Nook. Each note names the problem and a suggested fix. Never comment on your own choices (call verb, base, wording), never say his name isn't a luck pun or breaks the naming rules (his name is his), and no "consider…" filler. Use [] if nothing is wrong. Never change the decided details themselves.`;
   }
 
   // The drawing itself is NOT sent again here: step 1 already described it ("seen").
@@ -1187,7 +1188,7 @@ KEEP IT SHORT: Morgan only needs the name, what it does, and a short origin. No 
 
 Return ONLY this JSON (no code fences, no other text):
 {
- "name": "the luck-pun name, e.g. Owlways",
+ "name": "the two-part name: luck-pun first name + second name, e.g. Owlways Brightwatch",
  "pun": "what the name combines, e.g. owl + always",
  "pronunciation": "e.g. OWL-ways",
  "call_verb": "its one-word verb, e.g. pin",
@@ -1197,7 +1198,7 @@ Return ONLY this JSON (no code fences, no other text):
  "quick": "What it does, one sentence under 20 words.",
  "hook": "${persp ? 'the fresh way of seeing the need, one sentence' : 'its endearing flaw and how that flaw is its luck, one sentence'}",
 ${(job.luckCands || job.luckFixed) ? ' "rooted": "the tradition you used, exactly as named",\n' : ''} "origin": "where it came from, 2-3 short sentences: ONE specific, surprising detail about how it began and ONE small moment that shows who it is. Concrete and a little funny. No summing-up line at the end (not 'ever since', not 'and that is why')",
- "alt_names": ["3 alternate luck-pun names"]
+ "alt_names": ["3 alternate two-part names, each with a different first-name pun"]
 }`;
   }
 
@@ -1217,7 +1218,7 @@ NAME MY DRAWING: Morgan drew this Klinkaroo himself (image attached) and hasn't 
 3. ${pick ? `Collection: ${COLLECTIONS[pick].one} (Morgan chose this).` : 'Collection: decide which fits the drawing better — Lucky Misfit (an endearing flaw that is its superpower) or Perspective Maker (a fresh way of seeing).'}
 4. ${nookLine(job)}
 ${seriesLine()}
-5. Give 5 DIFFERENT luck-pun names that fit THIS drawing: hear a name and you should picture this drawing AND hear the luck.
+5. Give 5 DIFFERENT two-part names (luck-pun first name + second name) that fit THIS drawing: hear a name and you should picture this drawing AND hear the luck.
 
 Return ONLY this JSON (no code fences):
 {"seen":"2-3 sentences: only what is in the drawing",
@@ -1225,7 +1226,7 @@ Return ONLY this JSON (no code fences):
  "need":"the everyday need it's for, plain words",
  "why":"one sentence: what in the drawing points to this luck",
  "nook":"two-digit Nook code",
- "names":[{"name":"luck-pun name","pun":"e.g. happy + petal","charm_title":"The ___ Charm","quick":"what it does, under 18 words","call_verb":"one-word verb","luck_tag":"1-3 plain words naming the kind of luck","look_tag":"2-4 words, the situation to see freshly"}]}`;
+ "names":[{"name":"two-part name, e.g. Happin Brightpetal","pun":"what the first name combines, e.g. happy + petal","charm_title":"The ___ Charm","quick":"what it does, under 18 words","call_verb":"one-word verb","luck_tag":"1-3 plain words naming the kind of luck","look_tag":"2-4 words, the situation to see freshly"}]}`;
   }
 
   function quickPrompt(job) {
@@ -1242,15 +1243,16 @@ ${seriesLine()}
 ${inspoLine(job)}
 ${avoidLine(job)}
 
-QUICK SKETCH MODE: give 5 rough, DIFFERENT Klinkaroos for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Every name is a luck-pun name, and all five puns are different.
+QUICK SKETCH MODE: give 5 rough, DIFFERENT Klinkaroos for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Every name is a two-part name with a luck-pun first name, and all five first-name puns are different.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"luck-pun name, e.g. Owlways","pun":"e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"two-part name, e.g. Owlways Brightwatch","pun":"what the first name combines, e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(names, context) {
     return `Quick screen: are these invented character names already used by well-known characters, mascots, toys, games, children's books, or brands?
 Names: ${names.join(', ')}
+(Two-part names are first name + second name. Check each full name; also mark it "similar" if its FIRST name alone is a well-known character, mascot or brand, and say so.)
 Context: original good-luck characters — ${context}. 
 
 Use web search (at most 3 searches; you may check several names in one search). Return ONLY this JSON:
@@ -1418,7 +1420,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
 
   // The affirmation people say to call their charm. Built here so the shape is always the same.
   function callingLine(c, key) {
-    const name = c.name || 'Klinkaroo', verb = plainVerb((c.verb || 'knock').toLowerCase().replace(/[^a-z' -]/g, '').trim() || 'knock');
+    const name = c.callName || String(c.name || 'Klinkaroo').split(' ')[0], verb = plainVerb((c.verb || 'knock').toLowerCase().replace(/[^a-z' -]/g, '').trim() || 'knock');
     if (key === 'persp') {
       const t = (c.tag || 'it').replace(/^(a\s+)?fresh look at\s+/i, '').replace(/[.!]+$/, '');
       return `Knock knock, ${name}, ${verb} me a fresh look at ${t}!`;
@@ -1621,12 +1623,12 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     job.charm = normCharm(res.data, job.key);
     job.luck = job.luckFixed || matchLuck(pick(res.data, ['rooted']), job.luckCands);
     if (job.luck) state.luckUsed.add(job.luck.s);
-    if (job.knock) job.ruleNotes = strList(res.data.rule_notes).slice(0, 5);
+    if (job.knock) job.ruleNotes = strList(res.data.rule_notes).slice(0, 2);
     if (!job.chosen && job.develop && job.devName) {   // Develop this one: the sketch keeps its name
       const fixed = tidyName(job.devName);
       if (fixed && fixed.toLowerCase() !== job.charm.name.toLowerCase()) {
-        const rx = new RegExp('\\b' + job.charm.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
-        ['quick', 'charm_title', 'hook', 'origin'].forEach(k => { job.charm[k] = String(job.charm[k] || '').replace(rx, fixed); });
+        const sw = nameSwapper(job.charm.name, fixed);
+        ['quick', 'charm_title', 'hook', 'origin'].forEach(k => { job.charm[k] = sw(job.charm[k]); });
         job.charm.name = fixed; job.charm.pronunciation = ''; job.charm.pun = job.devPun || '';
       }
       else if (job.devPun && !job.charm.pun) job.charm.pun = job.devPun;
@@ -1729,6 +1731,15 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     paint();
   }
 
+  // Swaps an old name for a new one in text; with two-part names, the first name is swapped too.
+  function nameSwapper(oldName, newName) {
+    const rxOf = n => new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
+    const pairs = [[rxOf(oldName), newName]];
+    const oF = oldName.split(' ')[0], nF = newName.split(' ')[0];
+    if (oF.toLowerCase() !== nF.toLowerCase() && oF.toLowerCase() !== oldName.toLowerCase()) pairs.push([rxOf(oF), nF]);
+    return t => pairs.reduce((acc, [rx, to]) => acc.replace(rx, to), String(t || ''));
+  }
+
   /* ── RENAME A FINISHED CARD: swap in a clear alternative, no new AI call. ── */
   function renameCandidates(job) {
     if (job.namesState !== 'done' || !job.names) return [];
@@ -1761,12 +1772,12 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   function renameCharm(job, newName) {
     const c = job.charm, old = c.name;
     newName = tidyName(newName); if (!newName || newName === old) return;
-    const rx = new RegExp('\\b' + old.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
-    const swap = v => typeof v === 'string' ? v.replace(rx, newName) : Array.isArray(v) ? v.map(swap) : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)])) : v;
+    const sw = nameSwapper(old, newName);
+    const swap = v => typeof v === 'string' ? sw(v) : Array.isArray(v) ? v.map(swap) : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)])) : v;
     ['quick', 'charm_title', 'hook', 'origin']
       .forEach(k => { c[k] = swap(c[k]); });
     if (job.care) job.care = swap(job.care);
-    c.name = newName; c.pun = ''; c.pronunciation = '';
+    c.name = newName; c.pun = ''; c.pronunciation = ''; c.callName = '';
     c.alt_names = c.alt_names.filter(n => n.toLowerCase() !== newName.toLowerCase());
     c.renamedFrom = (c.renamedFrom ? c.renamedFrom + ', ' : '') + old;
     c.repeat = false; job.devName = newName;
