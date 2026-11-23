@@ -554,7 +554,7 @@
     <div class="filter-label">Series <span class="hint">(optional — a design family, like "Plant Pot". Typed fresh each time; nothing is saved)</span></div>
     <input class="text-input series-input" id="seriesInput" type="text" maxlength="40" placeholder="e.g. Plant Pot" autocomplete="off">
 
-    <div class="filter-label">Which Nook does it live in? <span class="hint">(the nine Nooks of the Lucky Cabinet)</span></div>
+    <div class="filter-label">Which Nook does it live in? <span class="hint">(the Nooks of the Lucky Nine Cabinet)</span></div>
     <div class="nook-any"><button class="pill-btn dark active" id="nookAny" type="button">✦ Let it choose</button></div>
     <div class="nook-grid" id="nookGrid"></div>
     <div style="height:12px"></div>
@@ -641,7 +641,7 @@
     persp:   { key: 'persp',   label: 'Perspective Makers', one: 'Perspective Maker', cls: 'persp', emoji: '👁' }
   };
 
-  // ── THE LUCKY CABINET: nine Nooks in a 3×3 grid, addressed by the lucky numbers 3, 4, 9 ──
+  // ── THE LUCKY NINE CABINET: nine Nooks in a 3×3 grid, addressed by the lucky numbers 3, 4, 9 ──
   const NOOKS = [
     { code: '33', ends: ['beam', 'glow', 'peek'], name: 'Window Nook',   emoji: '🪟', short: 'sky · seeing differently', luck: 'weather, the sky, seeing things differently' },
     { code: '34', ends: ['nod', 'doze', 'snug', 'hush'], name: 'Pillow Nook',   emoji: '🛏', short: 'sleep · worries',          luck: 'sleep, dreams, worries, bad days' },
@@ -716,7 +716,33 @@
     'waiting for good news', 'starting a diet of more vegetables', 'speaking up in meetings', 'a plant that keeps dying',
     'the printer jamming', 'moving to a new town', 'a sad day', 'learning something hard', 'the dog getting out',
     'cooking for guests', 'running a first 5K', 'keeping socks in pairs', 'a job interview', 'missing someone far away',
-    'the bus never coming', 'finishing a project', 'a fresh start'];
+    'the bus never coming', 'finishing a project', 'a fresh start',
+    // Window Nook
+    'a cloudy mood', 'a snow day that won\'t come', 'seeing the good in a bad grade', 'a boring afternoon', 'being stuck indoors',
+    'the first warm day of spring', 'a gray Monday sky',
+    // Pillow Nook
+    'a bad dream', 'worrying about tomorrow', 'a thunderstorm at night', 'a grumpy morning', 'sleepover nerves', 'a bad hair day',
+    // Clock Nook
+    'waiting in a long line', 'a slow computer', 'waiting for a package', 'homework due tomorrow', 'the last five minutes of school',
+    'a birthday that feels forever away', 'a flight that\'s delayed',
+    // Kettle Nook
+    'picky eating', 'burning the pancakes', 'packing a school lunch', 'a cake that won\'t rise', 'running out of milk', 'the last cookie',
+    'a spilled bowl of cereal',
+    // Junk Nook
+    'a broken toy', 'a squeaky door', 'a drawer that won\'t close', 'the TV remote vanishing', 'a wobbly table', 'tangled headphones',
+    'a closet that\'s overflowing',
+    // Pocket Nook
+    'losing my glasses', 'forgetting a password', 'remembering someone\'s name', 'a lost library book', 'finding the car in a big parking lot',
+    'a missing earring',
+    // Doorstep Nook
+    'the first day of school', 'a first sleepover', 'a road trip with kids', 'making up with a friend', 'a new neighbor', 'a long-distance friend',
+    'trying a new hobby',
+    // Garden Nook
+    'a new baby brother or sister', 'a puppy that chews everything', 'a cat that won\'t come inside', 'growing tomatoes', 'learning to ride a bike',
+    'sharing with a sibling', 'being a late bloomer', 'a grandparent visiting',
+    // Desk Nook
+    'a spelling test', 'a science fair project', 'writer\'s block', 'a big presentation', 'a group project', 'learning to read', 'a piano recital',
+    'tryouts for the team', 'an inbox that won\'t quit'];
   let needBag = [];
   function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function drawNeed() { if (!needBag.length) needBag = shuffle(NEEDS); return needBag.pop(); }
@@ -734,7 +760,7 @@
      PROMPTS
      ════════════════════════════════════════════════════ */
   const WORLD = `THE WORLD OF THE KLINKAROOS:
-Klinkaroos (the clink of a lucky coin + a bouncy -aroo, as in buckaroo) are Morgan's set of good-luck characters, built to grow into a big collectible set like Pokemon — someday animations, comic strips, games, plush toys, pins and costumes. They live in the LUCKY CABINET: an enormous old wooden cabinet that is a whole world. Knocking on wood is literally knocking on their door — that's how a person calls a charm for help.
+Klinkaroos (the clink of a lucky coin + a bouncy -aroo, as in buckaroo) are Morgan's set of good-luck characters, built to grow into a big collectible set like Pokemon — someday animations, comic strips, games, plush toys, pins and costumes. They live in the LUCKY NINE CABINET: an enormous old wooden cabinet that is a whole world. Knocking on wood is literally knocking on their door — that's how a person calls a charm for help.
 The Cabinet has nine NOOKS in a 3x3 grid. Each Nook's address is a two-digit combination of Morgan's lucky numbers 3, 4 and 9:
 ${NOOKS.map(n => `- ${n.code} ${n.name}: ${n.luck}`).join('\n')}
 Lucky Misfits and Perspective Makers live in every Nook.
@@ -1095,7 +1121,7 @@ ${COLLECTION_BRIEF.misfits}
 
 ${COLLECTION_BRIEF.persp}
 
-KNOCK KNOCK: Morgan is bringing his OWN idea to the Lucky Cabinet.
+KNOCK KNOCK: Morgan is bringing his OWN idea to the Lucky Nine Cabinet.
 ${job.name ? `- Its name (already chosen, keep exactly): "${job.name}"` : '- No name yet.'}
 ${job.notes ? `- Morgan's notes: ${job.notes}` : '- No notes.'}
 ${job.images.length ? knockImageRules(job.images) : '- No pictures.'}
@@ -1479,7 +1505,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const STEP_MSGS = {
     knock: ['Opening the Cabinet door…', 'Reading what you brought…', 'Looking closely at your pictures…', 'Finding where it belongs…'],
     draw: ['Studying your drawing…', 'Reading its expression…', 'Listening for the luck in it…', 'Trying out names…'],
-    write: ['Opening the Lucky Cabinet…', 'Finding the right Nook…', 'Trying out luck-pun names…', 'Writing where it came from…'],
+    write: ['Opening the Lucky Nine Cabinet…', 'Finding the right Nook…', 'Trying out luck-pun names…', 'Writing where it came from…'],
     quick: ['Filling the sketchbook…', 'Peeking into the Nooks…', 'Naming the strange little things…']
   };
 
