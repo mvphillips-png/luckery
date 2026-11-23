@@ -620,7 +620,9 @@
   // ── MODELS (lightweight version) ───────────────────────────────────
   // MODEL runs everything by default: sketches, drawing names, Knock Knock reads,
   // name checks, Care Cards and the charm itself.
-  // BEST_MODEL (Opus) is used ONLY by the "Make it shine" button on a finished card:
+  // BEST_MODEL (Opus) is used by the "Make it shine" button on a finished card, and by
+  // Quick Sketches (where the names are born; see NAME STYLES).
+  // The "Make it shine" button:
   // you pick a keeper, and Opus rewrites the whole card (name + birth number stay).
   // Opus thinks before it writes, and that thinking counts against max_tokens,
   // so it gets a bigger ceiling (TOKENS.shine).
@@ -630,6 +632,8 @@
   // One name check = at most 2 searches (one search can check several names at once).
   const NAME_TOOL  = { type: 'web_search_20250305', name: 'web_search', max_uses: 2 };
   const TOKENS = { write: 1500, shine: 4000, quick: 3000, names: 1500, care: 1500 };
+  // Quick Sketches run on Opus; its thinking counts against max_tokens, so it gets more room.
+  const SKETCH_MODEL = BEST_MODEL, SKETCH_TOKENS = 5000;
   const IMAGE_SIDE = 1024;   // pictures are shrunk to this before sending (smaller = fewer tokens)
   // LUCKY WORDS (quotes): one everyday-model call writes 3 quotes; the originality check
   // runs only on the starred one and uses at most 1 web search.
@@ -1018,6 +1022,41 @@ CALL VERB: one playful ACTION verb taken from what the charm IS or does: a real 
 LUCK WORDS: in the call, the luck words name a clear kind of luck in 1-3 plain words — "good-news luck", "winning luck", "on-time luck", "found-it luck", "speak-up luck". Never a phrase or instruction (not "pull it close luck", not "bigger half luck").
 - Plain, warm English. Short sentences. Facts must be true; if unsure, leave them out.`;
 
+  /* ════════════════════════════════════════════════════
+     NAME STYLES — Quick Sketches only. Each of the 5 sketches gets a DIFFERENT style,
+     so no two names sound alike. Shuffle-bag, this visit only (nothing saved).
+     Borrowed tricks (never names) from Douglas Adams and Star Wars.
+     ════════════════════════════════════════════════════ */
+  const NAME_STYLES = [
+    { style: 'Ordinary name with a twist', how: 'an everyday, friendly first name (like a neighbor or a great-aunt) + a plain-English surname or nickname that tells its luck or flaw. Funny because it is so ordinary.', shape: 'Penny Lucklanding · Pebble Getsthere' },
+    { style: 'Fun to say', how: 'a bouncy made-up name that tumbles out of your mouth, its sounds hinting at the luck. Built from easy chunks a child can sound out.', shape: 'Wanderwick · Bumblewhistle' },
+    { style: 'The ___', how: 'a short name + "the" + a funny title that names its flaw or its way of seeing.', shape: 'Trundle the Accidentally Right · Flipwell the Unflappable' },
+    { style: 'Droid code', how: 'two or three capital letters that hint at what it is + a dash + its Nook number, with a cute spoken nickname as the call name. Never copy a real code (R2-D2, C-3PO, BB-8, K-9, WALL-E, EVE).', shape: 'DB-34 ("Deebee") · WK-93 ("Wicky")' },
+    { style: 'Title', how: 'a title that gives instant character (Auntie, Captain, Professor, Sir, Madame, Grandpa, Officer, Doctor) + a name that tells its luck.', shape: 'Auntie Ding-at-Last · Sir Zigzag of the Doorstep' },
+    { style: 'Short sound', how: 'one short punchy name, 1-2 syllables, whose SOUND feels like its luck: soft and slow for sleep, snappy for speed, round for comfort.', shape: 'Dozabell · Pip' },
+    { style: 'Luck pun', how: 'one word that sounds like the thing it IS and the luck it brings at the same time, heard instantly without explaining.', shape: 'Owlways · Keyper' },
+    { style: 'Number joke', how: 'a name with a number that is funny in its story (its 49th try, always 3 minutes early). Use 3, 4 or 9 when you can.', shape: 'Seven-Tries Tilly · Gus Minus-Three' }
+  ];
+  let nameBag = [];
+  function drawNameStyles(n) {
+    const out = [];
+    while (out.length < n) {
+      if (!nameBag.length) nameBag = shuffle(NAME_STYLES);
+      const m = nameBag.pop();
+      if (!out.includes(m)) out.push(m);
+    }
+    return out;
+  }
+  const SKETCH_NAMING = `NAMING — THE MOST IMPORTANT DETAIL. The name must make you FEEL the character and its luck. People call their charm out loud ("Knock knock, Hattie, flip me some lands-on-its-feet luck!"), so every name also has a CALL NAME: the short part you say (a first name, a nickname, or a droid code's nickname).
+Every name must pass both tests:
+- From the name alone, you can guess its luck or its personality (its flaw or its way of seeing).
+- It sounds like a CHARACTER someone would want as a plush toy, not a product label. Personality first.
+It can be one name, two names, or a name with "the ___", whatever suits the character. Easy for a 7-year-old to read aloud: spelled the way it sounds, no silent letters, no odd letter clusters.
+NOT allowed: names that only describe a shape ("Roundabout", "Rollaway"), names that need explaining, existing brands, famous characters or a famous name with a letter changed (nothing that echoes Hitchhiker's Guide or Star Wars names), "-son" endings, and the Nook's name as the whole name.
+If a name is in the NAMES ALREADY USED list, make a different one.
+`;
+  const QUICK_STYLE = STYLE.slice(0, STYLE.indexOf('NAMING — THE MOST IMPORTANT DETAIL')) + SKETCH_NAMING + STYLE.slice(STYLE.indexOf('CALL VERB:'));
+
   const COLLECTION_BRIEF = {
     misfits: `COLLECTION: LUCKY MISFITS — "Good luck for the beautifully imperfect." Big idea: you don't have to be perfect to be lucky.
 A Lucky Misfit BRINGS LUCK with the need. It is not a superhero; it's spectacularly unqualified for the job — and its one endearing flaw is exactly the source of its luck. Show how. Emotional appeal: companionship, humor, encouragement.
@@ -1034,7 +1073,7 @@ The LUCKY THOUGHT is the headline takeaway.`
       ? `THE NEED (surprise pick — make the most of it): "${job.need}"`
       : `THE NEED Morgan typed: "${job.need}"`;
     if (job.develop) t += `\nDEVELOP THIS SKETCH into the full charm (keep its name, Nook and idea): ${job.develop}`;
-    if (job.develop && job.devName) t += `\nTHE NAME IS FIXED: "${job.devName}"${job.devPun ? ' (' + job.devPun + ')' : ''}. Use exactly that name; do not invent a new one.`;
+    if (job.develop && job.devName) t += `\nTHE NAME IS FIXED: "${job.devName}"${job.devPun ? ' (' + job.devPun + ')' : ''}${job.devCall ? ', called "' + job.devCall + '" for short' : ''}. Use exactly that name; do not invent a new one.`;
     return t;
   }
   function seriesLine() {
@@ -1231,7 +1270,8 @@ Return ONLY this JSON (no code fences):
 
   function quickPrompt(job) {
     const persp = job.key === 'persp';
-    return `${STYLE}
+    const styles = job.nameStyles || drawNameStyles(5);
+    return `${QUICK_STYLE}
 
 ${WORLD}
 
@@ -1243,10 +1283,14 @@ ${seriesLine()}
 ${inspoLine(job)}
 ${avoidLine(job)}
 
-QUICK SKETCH MODE: give 5 rough, DIFFERENT Klinkaroos for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}. Every name is a two-part name with a luck-pun first name, and all five first-name puns are different.
+QUICK SKETCH MODE: give 5 rough, DIFFERENT Klinkaroos for this need — different bases (mix animals, luck symbols and everyday objects), different angles on the need${state.nook ? '' : '. Spread them across the Nooks that reasonably fit (each angle on the need can point to a different Nook: speaking up in a meeting -> Desk; sharing credit with friends -> Doorstep), with at most two in the same Nook'}.
+
+NAME STYLES: sketch 1 uses style 1, sketch 2 uses style 2, and so on. The examples show the SHAPE only; never reuse them.
+${styles.map((m, i) => `${i + 1}. ${m.style}: ${m.how} (shape: ${m.shape})`).join('\n')}
+All five names must sound clearly different from each other.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"two-part name, e.g. Owlways Brightwatch","pun":"what the first name combines, e.g. owl + always","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"the full name, in its assigned style","name_style":"the style used","call_name":"the short name you say in the call","pun":"what the name hints at, under 10 words","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(names, context) {
@@ -1401,11 +1445,23 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
   const strList = v => list(v).map(str).filter(Boolean);
 
   // Luck-pun names (Owlways, Happin, Keyper): one word, first letter capitalized.
+  // Keeps up to 5 words ("Trundle the Accidentally Right"), droid codes ("DB-34") and small words (the, of).
+  const NAME_SMALL = new Set(['the', 'of', 'at', 'and', 'in', 'on', 'a']);
   function tidyName(n) {
-    n = String(n || '').trim().replace(/^the\s+/i, '').replace(/[^A-Za-z' -]/g, '').replace(/\s+/g, ' ').trim();
+    n = String(n || '').trim().replace(/^the\s+/i, '').replace(/[^A-Za-z0-9' -]/g, '').replace(/\s+/g, ' ').trim();
     if (!n) return '';
-    if (n.split(' ').length > 2) n = n.split(' ').slice(0, 2).join(' ');
-    return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    if (n.split(' ').length > 5) n = n.split(' ').slice(0, 5).join(' ');
+    return n.split(' ').map((w, i) => {
+      if (/\d/.test(w)) return w.toUpperCase();                                    // droid code
+      if (i > 0 && NAME_SMALL.has(w.toLowerCase())) return w.toLowerCase();
+      if (w === w.toUpperCase() && w.length > 3) w = w.toLowerCase();               // SHOUTING -> Shouting
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    }).join(' ');
+  }
+  // The short name said in the call. Falls back to the first word (or a droid code's nickname-free code).
+  function tidyCall(c, name) {
+    const t = tidyName(String(c || '').replace(/["“”()]/g, ''));
+    return t && t.split(' ').length <= 3 ? t : String(name || '').split(' ')[0];
   }
 
   // Safety net for the call: "buffs" → "buff", "pushes" → "push", "carries" → "carry".
@@ -1527,7 +1583,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     return ['misfits', 'persp'].filter(k => state.on[k]).map(key => {
       const cands = state.devLuck ? null : luckShortlist(state.mode === 'quick' ? 8 : 5, taken);
       (cands || []).forEach(e => taken.push(e.s));
-      return { id: key, key, need, surprise, develop: state.develop, devName: state.devName, devPun: state.devPun, mode: state.mode, status: 'pending',
+      return { id: key, key, need, surprise, develop: state.develop, devName: state.devName, devPun: state.devPun, devCall: state.devCall, mode: state.mode, status: 'pending',
         luckFixed: state.devLuck || null, luckCands: cands, luck: null,
         charm: null, sketches: null, names: null, namesState: 'none', note: '' };
     });
@@ -1545,7 +1601,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     state.running = true;
     $('generateBtn').disabled = true;
     state.jobs = makeJobs();
-    state.develop = ''; state.devName = ''; state.devPun = ''; state.devLuck = null;   // a sketch hand-off is used once
+    state.develop = ''; state.devName = ''; state.devPun = ''; state.devCall = ''; state.devLuck = null;   // a sketch hand-off is used once
     $('sheets').innerHTML = '';
     $('outError').style.display = 'none';
     $('actionRow').style.display = 'none';
@@ -1626,6 +1682,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
     if (job.knock) job.ruleNotes = strList(res.data.rule_notes).slice(0, 2);
     if (!job.chosen && job.develop && job.devName) {   // Develop this one: the sketch keeps its name
       const fixed = tidyName(job.devName);
+      if (job.devCall) job.charm.callName = tidyCall(job.devCall, fixed);
       if (fixed && fixed.toLowerCase() !== job.charm.name.toLowerCase()) {
         const sw = nameSwapper(job.charm.name, fixed);
         ['quick', 'charm_title', 'hook', 'origin'].forEach(k => { job.charm[k] = sw(job.charm[k]); });
@@ -2628,12 +2685,14 @@ clear = no notable match found. similar = it echoes a known line (same key words
   async function runQuick(job) {
     const usedBefore = recentNames().map(n => n.toLowerCase());
     setStep(job, 'Sketching five ' + COLLECTIONS[job.key].label, STEP_MSGS.quick);
-    const body = { model: MODEL, max_tokens: TOKENS.quick, messages: [{ role: 'user', content: quickPrompt(job) }] };
+    job.nameStyles = drawNameStyles(5);
+    const body = { model: SKETCH_MODEL, max_tokens: SKETCH_TOKENS, messages: [{ role: 'user', content: quickPrompt(job) }] };
     const good = d => list(d.sketches).length > 0;
     const res = await askOnce(body, good);
     clearInterval(job.timer);
     job.sketches = list(res.data.sketches).map(s => ({
       rawName: str(pick(s, ['name'])), pun: str(pick(s, ['pun'])), charm_title: str(pick(s, ['charm_title', 'title'])),
+      nameStyle: str(pick(s, ['name_style', 'style'])), rawCall: str(pick(s, ['call_name', 'callName', 'nickname'])),
       nook: nookBy(pick(s, ['nook'])) || nookBy(state.nook) || NOOKS[4],
       quick: str(pick(s, ['quick', 'one_liner'])), hook: str(pick(s, ['hook', 'flaw', 'perspective'])),
       look: str(pick(s, ['look', 'base'])), move: str(pick(s, ['move', 'signature_move'])), line: str(pick(s, ['line', 'ritual', 'thought'])),
@@ -2641,7 +2700,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
       luck: matchLuck(pick(s, ['rooted']), job.luckCands)
     })).filter(s => s.rawName);
     job.sketches.forEach(s => { if (s.luck) state.luckUsed.add(s.luck.s); });
-    job.sketches.forEach(s => { s.name = tidyName(s.rawName) || 'Unnamed'; s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
+    job.sketches.forEach(s => { s.name = tidyName(s.rawName) || 'Unnamed'; s.callName = tidyCall(s.rawCall, s.name); s.calling = callingLine(s, job.key); s.repeat = usedBefore.includes(s.name.toLowerCase()); });
     rememberNames(job.sketches.map(s => s.name));
     job.status = 'done';
     job.el.innerHTML = sketchesHTML(job);
@@ -2662,13 +2721,13 @@ clear = no notable match found. similar = it echoes a known line (same key words
   // Opens a fresh copy of the generator in a new tab that builds this sketch as a Full Charm,
   // carrying over the settings. The sketch list stays put in this tab.
   function openSketchInNewTab(job, s) {
-    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, devPun: s.pun, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series, luck: s.luck || null };
+    const payload = { key: job.key, need: job.need, develop: sketchText(s), devName: s.name, devPun: s.pun, devCall: s.callName, nook: s.nook.code, inspo: state.inspo, web: state.web, series: state.series, luck: s.luck || null };
     const url = location.href.split('#')[0] + '#develop=' + encodeURIComponent(JSON.stringify(payload));
     return !!window.open(url, '_blank');
   }
 
   function developSketch(job, s) {
-    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, devPun: s.pun, nook: s.nook.code, luck: s.luck || null });
+    applySettings({ key: job.key, need: job.need, develop: sketchText(s), devName: s.name, devPun: s.pun, devCall: s.callName, nook: s.nook.code, luck: s.luck || null });
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(generate, 350);
   }
@@ -2681,6 +2740,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
     state.develop = String(p.develop || '').slice(0, 700);
     state.devName = String(p.devName || '').slice(0, 40);
     state.devPun = String(p.devPun || '').slice(0, 120);
+    state.devCall = String(p.devCall || '').slice(0, 40);
     const L = p.luck;
     state.devLuck = (L && typeof L === 'object' && L.s && L.w) ? { s: String(L.s).slice(0, 80), p: String(L.p || '').slice(0, 80), l: String(L.l || '').slice(0, 60), w: String(L.w).slice(0, 300) } : null;
     if (typeof p.series === 'string') $('seriesInput').value = p.series.slice(0, 40);
@@ -2790,6 +2850,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
       <div class="sketch-grid">${job.sketches.map(s => `<div class="sketch">
         <div class="sk-name">${esc(s.name)}${s.repeat ? ' <span class="badge b-warn">name used before</span>' : ''}</div>
         ${s.pun ? `<div class="sk-line" style="opacity:.75">${esc(s.pun)}</div>` : ''}
+        ${s.nameStyle ? `<div class="sk-line"><b>Name style</b>${esc(s.nameStyle)}</div>` : ''}
         <div class="sk-luck">${esc(s.charm_title)}</div>
         <div class="sk-call">“${esc(s.calling)}”</div>
         <div class="sk-check"></div>
@@ -3102,7 +3163,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
     $('bothNote').textContent = knock ? 'Optional — tap one to choose, or leave both off and it decides (or reads it from your old idea).' : draw ? 'Optional — tap one to choose, or leave both off and it decides from your drawing.' : 'Tap one or both. Both = the same need, two charms.';
     document.querySelectorAll('#modeRow .pill-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
     $('modeNote').textContent = mode === 'quick'
-      ? 'Five rough charms per kind, fast — tap “Develop this one” on any you like.'
+      ? 'Five rough charms per kind, named by Opus in five different name styles — tap “Develop this one” on any you like.'
       : knock ? 'Bring your own: a name, notes, a screenshot of an old idea, or a photo of a real thing. A name goes straight to the full charm; no name gets 5 checked names first.'
       : draw ? 'Upload a Klinkaroo you drew. It suggests 5 luck-pun names and the luck it’s for — pick one for the full card.'
       : 'One finished charm per collection — name, what it does, backstory, and how it grows.';
