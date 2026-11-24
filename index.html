@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Klinkaroos Generator | Lucky Misfits · Perspective Makers</title>
+<title>Klinkaroos Generator | Unlikely Little Wonders · Little Lookouts</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&family=Boogaloo&display=swap" rel="stylesheet">
 <!-- jsPDF: draws the PDF as real text (same library + version as CITYSCOPE and Seeds & Worms) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -107,7 +107,7 @@
   .mode-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
   .mode-note { text-align: center; font-size: 12.5px; font-weight: 700; color: rgba(26,10,46,0.62); margin-bottom: 20px; }
 
-  /* ── OPTION CARDS (Lucky Misfits / Perspective Makers) ── */
+  /* ── OPTION CARDS (Unlikely Little Wonders / Little Lookouts) ── */
   .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 10px; }
   .opt-card {
     --accent: var(--orange); --accent-dark: #b34700;
@@ -446,6 +446,12 @@
   .stage-desc { font-size: 14.5px; line-height: 1.5; color: var(--cream); }
   @media (max-width: 620px) { .nook-grid { grid-template-columns: 1fr 1fr; } .growth-grid { grid-template-columns: 1fr; } }
 
+  /* ── KLINKWICK ── */
+  .kw-bolt { display: inline-block; vertical-align: -3px; }
+  .charm-kw { font-size: 13px; color: rgba(255,251,232,0.8); margin-top: 4px; }
+  .charm-kw code { font-family: 'Nunito', sans-serif; font-weight: 900; letter-spacing: 0.06em; color: var(--yellow); }
+  .nook-btn small .kw-bolt { vertical-align: -1px; }
+
   /* ── LUCKY WORDS (motivational quotes) ── */
   .quote-zone { margin-top: 10px; }
   .q-label { font-weight: 700; font-size: 14px; color: var(--cream); margin-bottom: 8px; }
@@ -475,7 +481,7 @@
 
 <div class="page">
 
-  <div class="top-badge"><span>🍀 Lucky Misfits · Perspective Makers</span></div>
+  <div class="top-badge"><span>🍀 Unlikely Little Wonders · Little Lookouts</span></div>
 
   <div class="hero-title">
     <span class="line1">KLINKAROOS</span>
@@ -530,9 +536,9 @@
         <div class="opt-head">
           <span class="opt-check">✓</span>
           <span>
-            <span class="opt-name">Lucky Misfit</span><br>
-            <span class="opt-tag">Brings you luck with it.</span><br>
-            <span class="opt-big">Flaws are their superpowers. You don't have to be perfect to be lucky.</span>
+            <span class="opt-name">Unlikely Little Wonder</span><br>
+            <span class="opt-tag">Brings a little luck.</span><br>
+            <span class="opt-big">Its imperfection is the source of its gift. You don't have to be perfect to bring something good into the world.</span>
           </span>
         </div>
       </div>
@@ -540,9 +546,9 @@
         <div class="opt-head">
           <span class="opt-check">✓</span>
           <span>
-            <span class="opt-name">Perspective Maker</span><br>
-            <span class="opt-tag">Helps you see it differently.</span><br>
-            <span class="opt-big">Sometimes changing your perspective changes your luck.</span>
+            <span class="opt-name">Little Lookout</span><br>
+            <span class="opt-tag">Your little life guide.</span><br>
+            <span class="opt-big">Helps you look at it another way. Its imperfection is how it learned what it teaches.</span>
           </span>
         </div>
       </div>
@@ -607,7 +613,7 @@
   </div>
 
   <div class="site-footer">
-    <span class="footer-tagline">Knock on wood.</span><br>
+    <span class="footer-tagline">Knock on wood. We're listening.</span><br>
     Klinkaroos Generator · <a href="https://quirkyflashchronicles.com" target="_blank" rel="noopener">Quirky Flash Chronicles</a> · Studio Bits of Gravity<br>
     MVANNP
   </div>
@@ -641,8 +647,8 @@
   const QUOTE_TOOL = { type: 'web_search_20250305', name: 'web_search', max_uses: 1 };
 
   const COLLECTIONS = {
-    misfits: { key: 'misfits', label: 'Lucky Misfits', one: 'Lucky Misfit', cls: 'misfit', emoji: '🍀' },
-    persp:   { key: 'persp',   label: 'Perspective Makers', one: 'Perspective Maker', cls: 'persp', emoji: '👁' }
+    misfits: { key: 'misfits', label: 'Unlikely Little Wonders', one: 'Unlikely Little Wonder', cls: 'misfit', emoji: '🍀' },
+    persp:   { key: 'persp',   label: 'Little Lookouts', one: 'Little Lookout', cls: 'persp', emoji: '🔭' }
   };
 
   // ── THE LUCKY NINE CABINET: nine Nooks in a 3×3 grid, addressed by the lucky numbers 3, 4, 9 ──
@@ -651,12 +657,26 @@
     { code: '34', ends: ['nod', 'doze', 'snug', 'hush'], name: 'Pillow Nook',   emoji: '🛏', short: 'sleep · worries',          luck: 'sleep, dreams, worries, bad days' },
     { code: '39', ends: ['tock', 'tick', 'chime'], name: 'Clock Nook',    emoji: '⏰', short: 'late · waiting',           luck: 'being late, waiting, patience, deadlines' },
     { code: '43', ends: ['bun', 'perk', 'crumb', 'brew'], name: 'Kettle Nook',   emoji: '☕', short: 'coffee · mornings',        luck: 'coffee, cooking, mornings, food' },
-    { code: '44', ends: ['nik', 'bit', 'odd'], name: 'Junk Nook',     emoji: '🗃', short: 'the crossroads',           luck: 'everything that fits nowhere else; the busy crossroads at the center of the Cabinet, where Lucky Misfits gather' },
+    { code: '44', ends: ['nik', 'bit', 'odd'], name: 'Junk Nook',     emoji: '🗃', short: 'the crossroads',           luck: 'everything that fits nowhere else; the busy crossroads at the center of the Cabinet, where Unlikely Little Wonders gather' },
     { code: '49', ends: ['clink', 'tuck', 'keep', 'stash'], name: 'Pocket Nook',   emoji: '👛', short: 'lost things · remembering', luck: 'lost keys, remembering things, small treasures' },
     { code: '93', ends: ['step', 'hop', 'latch'], name: 'Doorstep Nook', emoji: '🚪', short: 'new starts · travel',      luck: 'new starts, travel, friends, getting home safe' },
     { code: '94', ends: ['ling', 'sprout', 'bloom'], name: 'Garden Nook',   emoji: '🌱', short: 'growing · family · pets', luck: 'growing, late bloomers, family and the people you love, pets, patience with yourself' },
     { code: '99', ends: ['nib', 'doodle', 'dot'], name: 'Desk Nook',     emoji: '✏️', short: 'school · work',            luck: 'school, tests, work, big ideas' }
   ];
+  // KLINKWICK: the lightning-bolt antenna every Klinkaroo has; its color comes from its Nook.
+  const KLINKWICK = {
+    '33': ['Clear-sky blue', '#4AA8FF'], '34': ['Moonbeam lavender', '#A98BFF'], '39': ['Alarm red', '#FF4B4B'],
+    '43': ['Kettle copper', '#F07C2C'], '44': ['Odd-drawer magenta', '#F03E8C'], '49': ['Found-coin gold', '#FFC91F'],
+    '93': ['Welcome teal', '#2CBFB0'], '94': ['Sprout green', '#3CCB6A'], '99': ['Highlighter lime', '#C8F000']
+  };
+  NOOKS.forEach(n => { n.kwName = KLINKWICK[n.code][0]; n.kw = KLINKWICK[n.code][1]; });
+  const BOLT_PATH = 'M14 1 L3 18 H11 L8 31 L21 12 H13 Z';   // 24 x 32 box
+  const kwBolt = (n, h) => `<svg class="kw-bolt" width="${Math.round(h * 0.75)}" height="${h}" viewBox="0 0 24 32" aria-hidden="true"><path d="${BOLT_PATH}" fill="${n.kw}" stroke="#1a0a2e" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+  function drawBolt(g, x, y, h, color) {   // canvas version, (x, y) = top-left
+    const k = h / 32; g.save(); g.translate(x, y); g.scale(k, k);
+    const p = new Path2D(BOLT_PATH); g.fillStyle = color; g.fill(p);
+    g.lineJoin = 'round'; g.lineWidth = 2.2; g.strokeStyle = '#1a0a2e'; g.stroke(p); g.restore();
+  }
   const nookBy = v => {
     const t = String(v || '').toLowerCase();
     const digits = (t.match(/\b(33|34|39|43|44|49|93|94|99)\b/) || [])[1];
@@ -685,7 +705,7 @@
   /* ════════════════════════════════════════════════════
      BIRTH NUMBERS — every full charm is numbered from the minute it was born.
      Same on every device, no storage needed, never repeats, always goes up.
-     Format: 349-1620-3  →  [birth count] - [kind: 3 = Lucky Misfit, 4 = Perspective Maker]
+     Format: 349-1620-3  →  [birth count] - [kind: 3 = Unlikely Little Wonder, 4 = Little Lookout]
      The count starts at a secret point past 3,490,000 and adds 3 per minute.
      (A public Birth Date Decoder will read these back later.)
      ════════════════════════════════════════════════════ */
@@ -717,10 +737,14 @@
   const NEEDS = ['always running late', 'keeping the coffee fresh', 'having a great day', 'nervous about a big test',
     'losing my keys', 'Monday mornings', 'first day at a new job', 'a rainy weekend', 'a long drive home', 'falling asleep',
     'the toast always burning', 'finding a parking spot', 'remembering birthdays', 'a messy desk', 'meeting new people',
-    'waiting for good news', 'starting a diet of more vegetables', 'speaking up in meetings', 'a plant that keeps dying',
-    'the printer jamming', 'moving to a new town', 'a sad day', 'learning something hard', 'the dog getting out',
-    'cooking for guests', 'running a first 5K', 'keeping socks in pairs', 'a job interview', 'missing someone far away',
+    'waiting for good news', 'speaking up in meetings', 'a plant that keeps dying',
+    'the printer jamming', 'moving to a new town', 'learning something hard', 'the dog getting out',
+    'cooking for guests', 'running a first 5K', 'keeping socks in pairs', 'a job interview',
     'the bus never coming', 'finishing a project', 'a fresh start',
+    // from the Brand Bible: little everyday hopes
+    'finding something I lost', 'picking the fastest checkout line', 'finding the right words', 'the courage to try something new',
+    'keeping my coffee warm', 'remembering why I walked into a room', 'making a good first impression', 'knowing when to stop',
+    'finding the end of the tape roll',
     // Window Nook
     'a cloudy mood', 'a snow day that won\'t come', 'seeing the good in a bad grade', 'a boring afternoon', 'being stuck indoors',
     'the first warm day of spring', 'a gray Monday sky',
@@ -766,8 +790,12 @@
   const WORLD = `THE WORLD OF THE KLINKAROOS:
 Klinkaroos (the clink of a lucky coin + a bouncy -aroo, as in buckaroo) are Morgan's set of good-luck characters, built to grow into a big collectible set like Pokemon — someday animations, comic strips, games, plush toys, pins and costumes. They live in the LUCKY NINE CABINET: an enormous old wooden cabinet that is a whole world. Knocking on wood is literally knocking on their door — that's how a person calls a charm for help.
 The Cabinet has nine NOOKS in a 3x3 grid. Each Nook's address is a two-digit combination of Morgan's lucky numbers 3, 4 and 9:
-${NOOKS.map(n => `- ${n.code} ${n.name}: ${n.luck}`).join('\n')}
-Lucky Misfits and Perspective Makers live in every Nook.
+${NOOKS.map(n => `- ${n.code} ${n.name}: ${n.luck} (Klinkwick color: ${n.kwName})`).join('\n')}
+Unlikely Little Wonders and Little Lookouts live in every Nook.
+
+THE KLINKWICK: every Klinkaroo has a Klinkwick, a lightning-bolt-shaped antenna on its head that senses requests for good luck when someone knocks on wood. Its color comes from its Nook (listed above). Mention it only when it adds something, like how it twitches at a knock; don't describe it every time.
+EVERY KLINKAROO HAS: a Klinkwick, a remarkably specific kind of everyday luck, a recognizable personality, an imperfection connected to its gift, and a genuine desire to help. Klinkaroos can't change fate or guarantee success. Knock on wood, and one comes to give possibility a little nudge.
+LITTLE THINGS: Klinkaroos are about the little hopes of everyday life (finding what you lost, the fastest checkout line, the right words, just enough courage to try). The more specific and small, the better.
 
 GROWTH — KNICK → KNACK → KNOCK: every Klinkaroo grows as it brings luck, counted in Knocks (one Knock each time it helps someone).
 - KNICK (born with 3 Knocks): small and simple, one signature feature.
@@ -992,21 +1020,22 @@ Put the name of the one you used in "rooted", exactly as written inside its quot
 
   const STYLE = `You are designing ONE original Klinkaroo for Morgan Phillips (signature MVANNP), a cartoonist and illustrator who will draw it by hand over time. Right now the NAME matters most, then a SHORT origin; keep everything else to one line. Never use "Klinkaroo" as the creature's own name.
 
-CHARACTER STYLE: think Japanese mascot characters (yuru-chara) and collectible creatures like Pokemon — a lovable CHARACTER with a simple, iconic design. It can be a creature, an animal, or an everyday object stylized into a cute, charm-like creature. Not an abstract idea, not a realistic animal, not a microbe or mold.
-- Build it from ONE familiar base everyone recognizes: an animal (frog, mole, owl, snail, hedgehog...), a luck symbol from anywhere in the world, or an ordinary thing (teacup, mitten, alarm clock, pebble, sock, toaster). Animal + object fusions are great. Unless a tradition is given below, skip the overused Western luck symbols (horseshoe, four-leaf clover, rabbit's foot) and reach for something fresher.
-- Mascot proportions: one simple base shape, a big head, short limbs, small dot eyes, a tiny mouth, two or three flat colors plus one accent, and ONE signature feature you could spot from across a room. Simple enough to animate, draw in a comic strip, or sew as a plush.
-- Gentle, a little goofy, lovably awkward. Readable without words by a child anywhere.
+CHARACTER STYLE: think Japanese mascot characters (yuru-chara) and collectible creatures like Pokemon — a lovable CHARACTER with a simple, iconic design. It can resemble an everyday object, an animal, an imaginary creature nobody has ever seen before, or an unexpected combination of familiar and unfamiliar things. Not an abstract idea, not a realistic animal, not a microbe or mold.
+- Build it from ONE clear idea: a familiar base (an animal like a frog, mole, owl or snail; a luck symbol from anywhere in the world; an ordinary thing like a teacup, mitten, alarm clock, sock or toaster), OR an invented creature with one simple, readable shape. Animal + object fusions are great. Unless a tradition is given below, skip the overused Western luck symbols (horseshoe, four-leaf clover, rabbit's foot) and reach for something fresher.
+- Mascot proportions: one simple base shape, a big head, short limbs, small dot eyes, a tiny mouth, two or three flat colors plus one accent, and ONE signature feature you could spot from across a room (its Klinkwick doesn't count; every Klinkaroo has one). Simple enough to animate, draw in a comic strip, or sew as a plush.
+- VOICE: whimsical, curious, clever, optimistic, endearing and gently humorous, with a genuine desire to help. It never takes itself too seriously, but it always takes someone's hope seriously. Readable without words by a child anywhere.
 
 QUALITY BAR:
 - Specific beats cute. Real materials, real shapes, real behaviors. Never vague magic ("radiates positive energy", "sprinkles luck").
 - The luck must be EARNED: say how THIS creature, with THIS trait, helps with THIS need.
+- A NUDGE, NEVER A GUARANTEE: Klinkaroos can't change fate. Never promise the outcome ("lands right every time", "guarantees", "never fails"); they give possibility a little nudge.
 - No fortune-cookie wisdom. Rituals are tiny real actions a person can do today. Thoughts are plain, warm, short.
 - The origin should feel like it belongs in a long-running series: where it came from, in two or three short sentences.
 - No resemblance to existing characters (any Pokemon, Kumamon, Funassyi, Hello Kitty and Sanrio, Rilakkuma, Sumikko Gurashi, Moomins, Totoro, Kirby, Smurfs, Care Bears, Muppets, One Piece characters, etc.) — learn from the style, never copy. A name must not be a famous name with a letter changed.
 
 NAMING — THE MOST IMPORTANT DETAIL. Every charm has a TWO-PART NAME: a FIRST NAME (the luck pun) + a SECOND NAME (a family-style name), e.g. "Owlways Brightwatch", "Ketterix Lovestar". People CALL their charm out loud by its FIRST NAME, so the first name must pass the say-it-out-loud test:
-  Lucky Misfit:      "Knock knock, Owlways, hoot me some watched-over luck!"
-  Perspective Maker: "Knock knock, Aceorn, flip me a fresh look at test day!"
+  Unlikely Little Wonder:      "Knock knock, Owlways, hoot me some watched-over luck!"
+  Little Lookout: "Knock knock, Aceorn, flip me a fresh look at test day!"
 FIRST NAME = A LUCK PUN: it SOUNDS LIKE the good thing the charm brings — the way Japan's lucky owl, "fukurou", sounds like "luck comes" and "no hardship". One word that lets you hear TWO things at once:
   (a) the picturable thing it IS (owl, pin, key, acorn, clock, mug...) and
   (b) a word or phrase for the LUCK it brings (always, happen, keeper, ace, all good...).
@@ -1058,13 +1087,13 @@ If a name is in the NAMES ALREADY USED list, make a different one.
   const QUICK_STYLE = STYLE.slice(0, STYLE.indexOf('NAMING — THE MOST IMPORTANT DETAIL')) + SKETCH_NAMING + STYLE.slice(STYLE.indexOf('CALL VERB:'));
 
   const COLLECTION_BRIEF = {
-    misfits: `COLLECTION: LUCKY MISFITS — "Good luck for the beautifully imperfect." Big idea: you don't have to be perfect to be lucky.
-A Lucky Misfit BRINGS LUCK with the need. It is not a superhero; it's spectacularly unqualified for the job — and its one endearing flaw is exactly the source of its luck. Show how. Emotional appeal: companionship, humor, encouragement.
-Tone calibration only — do NOT reuse these ideas: an acorn creature (beginnings) born from an acorn that fell in the wrong place, who believes every mistake might be a planting opportunity; a rock creature (persistence) with very short legs who never gets anywhere quickly but always arrives.
+    misfits: `COLLECTION: UNLIKELY LITTLE WONDERS: they BRING a little luck. Big idea: you don't have to be perfect to bring something good into the world.
+An Unlikely Little Wonder is not a superhero; it's spectacularly unqualified for the job, and its one endearing imperfection is exactly the source of its gift. Show how. Emotional appeal: companionship, humor, encouragement.
+Tone calibration only (do NOT reuse these ideas): a finding-lost-things creature that is always getting lost itself, so it knows every hiding place; a warm-coffee creature that always feels cold, so it never lets a cup cool.
 The LUCKY RITUAL is the headline takeaway.`,
-    persp: `COLLECTION: PERSPECTIVE MAKERS — "Good luck is seeing what others overlook." Big idea: sometimes changing your perspective changes your luck.
-A Perspective Maker gives a FRESH WAY OF SEEING the need — it doesn't change your fortune, it helps you notice the possibility that was already there (for SAT nerves: the jitters are your body getting ready, the same rush a runner feels at the starting line). Emotional appeal: curiosity, discovery, wonder. It can be a little strange or ancient-looking, but still a simple mascot. Build it on something REAL from science, nature or folklore, and let that show in its design.
-Tone calibration only — do NOT reuse these ideas: a seed creature (hidden potential) that lives inside seeds that haven't sprouted; lucky thought: small doesn't mean insignificant. A snail creature (time) whose spiral shell never stops growing; lucky thought: progress doesn't always move in a straight line.
+    persp: `COLLECTION: LITTLE LOOKOUTS: little life guides. They look out for you, and they help you LOOK at the need another way. Big idea: sometimes changing how you see it changes your luck.
+A Little Lookout doesn't change your fortune; it walks beside you and helps you notice the possibility that was already there (for SAT nerves: the jitters are your body getting ready, the same rush a runner feels at the starting line). It has an imperfection too, and that imperfection is HOW IT LEARNED what it teaches. Emotional appeal: curiosity, discovery, wonder, a wise little friend. Ground its lesson in something REAL from science, nature or folklore when you can, and let that show in its design.
+Tone calibration only (do NOT reuse these ideas): a near-sighted owl that can't see far ahead, so it guides you to notice the good things close by; a snail whose spiral shell never stops growing; lucky thought: progress doesn't always move in a straight line.
 The LUCKY THOUGHT is the headline takeaway.`
   };
 
@@ -1106,6 +1135,7 @@ WORLD CARE RULES (same for every Klinkaroo):
 - They eat being called. Every knock-knock call is one Knock, and Knocks are how they grow (Knick → Knack at 34 → Knock at 349).
 - Skip calling it too long and it goes DUSTY: faded colors, grumpy face, and its luck RUNS BACKWARDS, in a way that mirrors the exact luck it normally brings. It never dies, never gets hurt.
 - Wake a Dusty charm with three knocks, then its own small "sorry" ritual.
+- Every Klinkaroo has a Klinkwick (a lightning-bolt antenna that senses knocks); this one's is ${c.nook.kwName}. It can droop or fade when Dusty.
 - Its Nook sets a basic need. ${c.nook.name} (${c.nook.code}) needs: ${NOOK_CARE[c.nook.code] || 'a little attention'}.
 
 THE CHARM:
@@ -1113,7 +1143,7 @@ THE CHARM:
 - The luck it brings: ${job.need}
 - Call: "${c.calling}"
 - What it does: ${c.quick}
-- ${persp ? 'Fresh perspective: ' : 'Flaw that is its luck: '}${c.hook}
+- ${persp ? 'Flaw that taught its lesson: ' : 'Flaw that is its luck: '}${c.hook}
 - Origin: ${c.origin}
 ${job.series ? '- Series: ' + job.series : ''}
 
@@ -1167,7 +1197,7 @@ ${job.name ? `- Its name (already chosen, keep exactly): "${job.name}"` : '- No 
 ${job.notes ? `- Morgan's notes: ${job.notes}` : '- No notes.'}
 ${job.images.length ? knockImageRules(job.images) : '- No pictures.'}
 - ${job.need ? `The luck it's for (Morgan's words): "${job.need}".` : 'Luck: if the notes or screenshots say it, use that; otherwise suggest the everyday need it is perfect for.'}
-- ${pick ? `Collection: ${COLLECTIONS[pick].one} (Morgan chose this).` : 'Collection: if the old idea says it, use that; otherwise decide — Lucky Misfit or Perspective Maker.'}
+- ${pick ? `Collection: ${COLLECTIONS[pick].one} (Morgan chose this).` : 'Collection: if the old idea says it, use that; otherwise decide — Unlikely Little Wonder or Little Lookout.'}
 - ${nookLine(job)}
 ${seriesLine()}
 
@@ -1235,7 +1265,7 @@ Return ONLY this JSON (no code fences, no other text):
  "charm_title": "The ___ Charm",
  "nook": "two-digit Nook code, e.g. 39",
  "quick": "What it does, one sentence under 20 words.",
- "hook": "${persp ? 'the fresh way of seeing the need, one sentence' : 'its endearing flaw and how that flaw is its luck, one sentence'}",
+ "hook": "${persp ? 'its imperfection and how it taught the fresh way of seeing it guides you to, one sentence' : 'its endearing flaw and how that flaw is its luck, one sentence'}",
 ${(job.luckCands || job.luckFixed) ? ' "rooted": "the tradition you used, exactly as named",\n' : ''} "origin": "where it came from, 2-3 short sentences: ONE specific, surprising detail about how it began and ONE small moment that shows who it is. Concrete and a little funny. No summing-up line at the end (not 'ever since', not 'and that is why')",
  "alt_names": ["3 alternate two-part names, each with a different first-name pun"]
 }`;
@@ -1254,7 +1284,7 @@ ${COLLECTION_BRIEF.persp}
 NAME MY DRAWING: Morgan drew this Klinkaroo himself (image attached) and hasn't named it yet.
 1. Look carefully. Describe ONLY what is actually in the drawing — shapes, colors, face, expression, objects, setting. Never invent features.
 2. ${job.need ? `The luck it's for (Morgan's words): "${job.need}".` : "Morgan doesn't know its luck yet. Read the drawing — its expression, body, objects and mood — and suggest the everyday need it is perfect for."}
-3. ${pick ? `Collection: ${COLLECTIONS[pick].one} (Morgan chose this).` : 'Collection: decide which fits the drawing better — Lucky Misfit (an endearing flaw that is its superpower) or Perspective Maker (a fresh way of seeing).'}
+3. ${pick ? `Collection: ${COLLECTIONS[pick].one} (Morgan chose this).` : 'Collection: decide which fits the drawing better — Unlikely Little Wonder (an endearing flaw that is its superpower) or Little Lookout (a little life guide whose imperfection taught it a fresh way of seeing).'}
 4. ${nookLine(job)}
 ${seriesLine()}
 5. Give 5 DIFFERENT two-part names (luck-pun first name + second name) that fit THIS drawing: hear a name and you should picture this drawing AND hear the luck.
@@ -1290,7 +1320,7 @@ ${styles.map((m, i) => `${i + 1}. ${m.style}: ${m.how} (shape: ${m.shape})`).joi
 All five names must sound clearly different from each other.
 
 Return ONLY this JSON (no code fences):
-{"sketches":[{"name":"the full name, in its assigned style","name_style":"the style used","call_name":"the short name you say in the call","pun":"what the name hints at, under 10 words","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'the fresh way of seeing it, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
+{"sketches":[{"name":"the full name, in its assigned style","name_style":"the style used","call_name":"the short name you say in the call","pun":"what the name hints at, under 10 words","call_verb":"one-word verb","${persp ? 'look_tag":"2-4 words, what to see freshly' : 'luck_tag":"1-3 plain words naming the kind of luck, e.g. good-news'}","charm_title":"The ___ Charm","nook":"two-digit code","quick":"what it does, under 18 words","hook":"${persp ? 'its flaw and the lesson it taught, one line' : 'the flaw and how it is the superpower, one line'}",${job.luckCands ? '"rooted":"the tradition it uses, exactly as named",' : ''}"line":"${persp ? 'lucky thought' : 'lucky ritual'}, under 10 words"}]}`;
   }
 
   function namePrompt(names, context) {
@@ -1597,7 +1627,7 @@ clear = no notable character, mascot or brand found. similar = a minor or loosel
       if (!state.drawing) { showError('Upload a drawing first — tap the dashed box.'); return; }
     } else if (state.mode === 'knock') {
       if (!$('knockName').value.trim() && !$('knockNotes').value.trim() && !state.knockImages.length) { showError('Give it a name, some notes, or a picture — anything to knock with.'); return; }
-    } else if (!state.on.misfits && !state.on.persp) { showError('Pick at least one kind of charm — Lucky Misfit, Perspective Maker, or both.'); return; }
+    } else if (!state.on.misfits && !state.on.persp) { showError('Pick at least one kind of charm — Unlikely Little Wonder, Little Lookout, or both.'); return; }
     state.running = true;
     $('generateBtn').disabled = true;
     state.jobs = makeJobs();
@@ -1872,7 +1902,7 @@ THE CURRENT VERSION:
 - Charm title: ${c.charm_title}
 - Call: "${c.calling}"
 - What it does: ${c.quick}
-- ${persp ? 'Fresh perspective' : 'Its flaw is its luck'}: ${c.hook}
+- ${persp ? 'Its flaw, its lesson' : 'Its flaw is its luck'}: ${c.hook}
 - Origin: ${c.origin}
 
 Return ONLY this JSON (no code fences, no other text):
@@ -1883,7 +1913,7 @@ Return ONLY this JSON (no code fences, no other text):
  "charm_title": "The ___ Charm",
  "nook": "two-digit Nook code",
  "quick": "What it does, one vivid sentence under 22 words.",
- "hook": "${persp ? 'the fresh way of seeing the need, one or two sentences, true and kind' : 'its endearing flaw and exactly how that flaw is its luck, one or two sentences'}",
+ "hook": "${persp ? 'its imperfection and how it taught the fresh way of seeing it guides you to, one or two sentences, true and kind' : 'its endearing flaw and exactly how that flaw is its luck, one or two sentences'}",
  "origin": "where it came from, 3-5 short sentences: a specific, surprising beginning, a small scene that shows who it is, and one detail that ties it to its Nook. Folklore-flavored, concrete and funny. No summing-up line at the end."
 }`;
   }
@@ -1998,6 +2028,7 @@ Return ONLY this JSON (no code fences, no other text):
     font('', 38, HEAD); g.fillStyle = NIGHT; g.textBaseline = 'middle'; g.textAlign = 'left';
     g.fillText('CARE CARD', X0, CY + bandH / 2 + 2);
     font('900', 28, BODY); g.textAlign = 'right'; g.fillText('No. ' + (c.number || ''), X0 + IW, CY + bandH / 2 + 2);
+    drawBolt(g, X0 + IW - g.measureText('No. ' + (c.number || '')).width - 54, CY + 13, 52, c.nook.kw);
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     const top = CY + bandH + 6 + 30, bottom = CY + CH - 40;
 
@@ -2100,7 +2131,7 @@ Return ONLY this JSON (no code fences, no other text):
       const callLines = careWrap(g, '“' + callLine + '”', IW);
       callLines.forEach(l => { y += 36 * s; if (draw) { g.fillStyle = ACC_INK; g.textAlign = 'center'; g.fillText(l, X0 + IW / 2, y); g.textAlign = 'left'; } });
       y += 34 * s;
-      if (draw) { font('900', 18 * s, BODY); g.fillStyle = MUTED; g.textAlign = 'center'; g.fillText('KLINKAROOS  ·  QUIRKY FLASH CHRONICLES  ·  MVANNP', X0 + IW / 2, y); g.textAlign = 'left'; }
+      if (draw) { font('900', 18 * s, BODY); g.fillStyle = MUTED; g.textAlign = 'center'; font('900', 16 * s, BODY); g.fillText('KLINKAROOS  ·  A LITTLE LUCK FOR THE LITTLE THINGS  ·  QUIRKY FLASH CHRONICLES  ·  MVANNP', X0 + IW / 2, y); g.textAlign = 'left'; }
       return y;
     };
     let s = 1;
@@ -2220,7 +2251,7 @@ THE CHARM:
 - Name: ${c.name} · ${c.charm_title || ''} · ${COLLECTIONS[job.key].one} · lives in the ${c.nook.name}
 - The luck it brings: ${job.need}
 - What it does: ${c.quick}
-- ${persp ? 'Its fresh way of seeing: ' : 'Its flaw that is its luck: '}${c.hook}
+- ${persp ? 'Its flaw and the lesson it taught: ' : 'Its flaw that is its luck: '}${c.hook}
 - Origin: ${c.origin}
 ${job.series ? '- Series: ' + job.series : ''}
 
@@ -2229,7 +2260,7 @@ ${how}
 
 QUALITY BAR:
 - 15 words or fewer. Plain words a 7-year-old can read, with a truth a grown-up still feels.
-- EARNED: it grows from THIS charm (its ${persp ? 'way of seeing' : 'flaw'}, its luck, what it is made of) through one concrete, picturable image. It must still make sense to someone who has never met the charm.
+- EARNED: it grows from THIS charm (its ${persp ? 'flaw and lesson' : 'flaw'}, its luck, what it is made of) through one concrete, picturable image. It must still make sense to someone who has never met the charm.
 - True and kind. Never promise guaranteed success. Small and real beats big and vague.
 - Do NOT put the charm's name in the quote (the card signs it).
 - No fortune-cookie phrases or close cousins: ${QUOTE_BANNED}.
@@ -2471,11 +2502,12 @@ clear = no notable match found. similar = it echoes a known line (same key words
     font('', 38, HEAD); g.fillStyle = NIGHT; g.textBaseline = 'middle';
     g.fillText('LUCKY WORDS', X0, CY + bandH / 2 + 2);
     font('900', 28, BODY); g.textAlign = 'right'; g.fillText('No. ' + (c.number || ''), X0 + IW, CY + bandH / 2 + 2);
+    drawBolt(g, X0 + IW - g.measureText('No. ' + (c.number || '')).width - 54, CY + 13, 52, c.nook.kw);
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
 
     const top = CY + bandH + 6 + 34, bottom = CY + CH - 30;
     // footer
-    font('900', 18, BODY); g.fillStyle = MUTED; center('KLINKAROOS  ·  QUIRKY FLASH CHRONICLES  ·  MVANNP', bottom);
+    font('900', 16, BODY); g.fillStyle = MUTED; center('KLINKAROOS  ·  A LITTLE LUCK FOR THE LITTLE THINGS  ·  QUIRKY FLASH CHRONICLES  ·  MVANNP', bottom);
     // signature block (sits above the footer)
     font('700', 27, BODY);
     const subLines = careWrap(g, [c.charm_title, c.nook.emoji + ' ' + c.nook.name].filter(Boolean).join('  ·  '), IW).slice(0, 2);
@@ -2806,6 +2838,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
         <div class="calling"><div class="calling-label">Call it · knock twice on wood</div>“${esc(c.calling)}”</div>
         ${c.charm_title ? `<div class="charm-title">${esc(c.charm_title)}</div>` : ''}
         <div class="charm-nook">${c.nook.emoji} Lives in the ${esc(c.nook.name)} (${esc(c.nook.code)})${job.series ? ' · ' + esc(job.series) + ' series' : ''}</div>
+        <div class="charm-kw">${kwBolt(c.nook, 18)} Klinkwick: ${esc(c.nook.kwName)} <code>${esc(c.nook.kw)}</code></div>
         ${job.luck ? `<div class="charm-rooted">🌍 Rooted in <b>${esc(job.luck.s)}</b> · ${esc(job.luck.p)}</div>` : ''}
         ${c.quick ? `<div class="charm-quick">${esc(c.quick)}</div>` : ''}
         <div class="charm-seed">${job.knock ? 'Your own idea (Knock Knock) · luck: ' : job.fromDrawing ? 'Named from your drawing · luck: ' : (job.surprise ? 'Surprise need: ' : 'Your need: ')}${esc(job.need)}${job.develop ? ' · developed from a sketch' : ''}${job.note ? ' · ' + esc(job.note) : ''}${c.polished ? ' · ✦ polished by Opus' : ''}</div>
@@ -2815,7 +2848,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
         <div class="out-pill pill-pink">Origin</div>${c.polished ? '<span class="shine-tag">✦ Polished by Opus</span>' : ''}
         <div class="out-title">Where It Came From</div>
         <div class="out-body"><p>${esc(c.origin || '—')}</p></div>
-        ${zap(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook)}
+        ${zap(persp ? 'Its flaw, its lesson' : 'Its flaw is its luck', c.hook)}
         <div class="shine-zone">${shineZoneInner(job)}</div>
       </div>
 
@@ -2854,10 +2887,10 @@ clear = no notable match found. similar = it echoes a known line (same key words
         <div class="sk-luck">${esc(s.charm_title)}</div>
         <div class="sk-call">“${esc(s.calling)}”</div>
         <div class="sk-check"></div>
-        <div class="sk-line"><b>Nook</b>${s.nook.emoji} ${esc(s.nook.name)} (${esc(s.nook.code)})</div>
+        <div class="sk-line"><b>Nook</b>${s.nook.emoji} ${esc(s.nook.name)} (${esc(s.nook.code)}) ${kwBolt(s.nook, 14)}</div>
         ${s.luck ? `<div class="sk-line"><b>Rooted in</b>🌍 ${esc(s.luck.s)} · ${esc(s.luck.p)}</div>` : ''}
         <div class="sk-quick">${esc(s.quick)}</div>
-        ${s.hook ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Fresh perspective' : 'Flaw → superpower'}</b>${esc(s.hook)}</div>` : ''}
+        ${s.hook ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Flaw → lesson' : 'Flaw → superpower'}</b>${esc(s.hook)}</div>` : ''}
         ${s.look ? `<div class="sk-line"><b>Look</b>${esc(s.look)}</div>` : ''}
         ${s.move ? `<div class="sk-line"><b>Signature move</b>${esc(s.move)}</div>` : ''}
         ${s.line ? `<div class="sk-line"><b>${job.key === 'persp' ? 'Lucky thought' : 'Lucky ritual'}</b>${esc(s.line)}</div>` : ''}
@@ -2883,13 +2916,13 @@ clear = no notable match found. similar = it echoes a known line (same key words
     L.push('No. ' + c.number + '   ' + c.name.toUpperCase() + (c.pronunciation ? '  (' + c.pronunciation + ')' : ''));
     L.push([c.charm_title, COLLECTIONS[job.key].one, c.nook.code + ' ' + c.nook.name].filter(Boolean).join(' · '));
     L.push('==============================');
-    add('Name', c.pun); add('Call it', c.calling); add('Need', job.need);
+    add('Name', c.pun); add('Call it', c.calling); add('Need', job.need); add('Klinkwick', c.nook.kwName + ' ' + c.nook.kw);
     if (job.luck) add('Rooted in', job.luck.s + ' (' + job.luck.p + '): ' + job.luck.w);
     add('Renamed from', c.renamedFrom); add('Series', job.series ? job.series + ' series' : ''); if (job.fromDrawing) L.push('(Named from Morgan\'s drawing)');
     if (job.knock) { L.push('(Morgan\'s own idea — Knock Knock)'); add('Your notes', job.knock.notes); add('From the old idea', job.knock.fromShots); (job.ruleNotes || []).forEach(n => L.push(' * Suggested update: ' + n)); }
     add('', c.quick); if (c.polished) L.push('(Polished by Opus)'); L.push('');
     add('Origin', c.origin);
-    add(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook);
+    add(persp ? 'Its flaw, its lesson' : 'Its flaw is its luck', c.hook);
     if (job.quoteSig && job.quoteSig.text) add('Lucky words', '"' + job.quoteSig.text + '" — ' + c.name + ', ' + c.nook.name + (job.quoteSig.move ? '  (technique: ' + job.quoteSig.move + ')' : ''));
     if (c.alt_names.length) add('Other names', c.alt_names.join(', '));
     if (job.namesState === 'done' && job.names) {
@@ -3064,6 +3097,8 @@ clear = no notable match found. similar = it echoes a known line (same key words
     K.y += 6; K.rule(C.pink, 1.2); K.y += 14;
     K.para(c.quick, { size: 15, style: 'bold', rgb: C.text, lh: 20 });
     if (job.series) K.para(job.series.toUpperCase() + ' SERIES', { size: 9.5, style: 'monobold', rgb: C.lime, lh: 13 });
+    { const kw = hexRgb(c.nook.kw); K.need(16); if (kw) { P.setFillColor(kw[0], kw[1], kw[2]); P.rect(M, K.y + 1, 9, 9, 'F'); }
+      K.font('monobold', 9, C.muted); P.text('KLINKWICK: ' + pdfSafe(c.nook.kwName).toUpperCase() + '  ' + c.nook.kw, M + 14, K.y + 9); K.y += 16; }
     if (job.image) {
       const iw = job.image.w, ih = job.image.h, sc = Math.min(220 / iw, 260 / ih);
       const w = iw * sc, h = ih * sc;
@@ -3086,7 +3121,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
     if (job.luck) K.labeled('Rooted in a real luck tradition', job.luck.s + ' (' + job.luck.p + ') -- ' + job.luck.w, C.teal);
     K.sectionHead('Origin', C.pink, c.polished ? 'where it came from  ·  polished by Opus' : 'where it came from');
     K.para(c.origin, { size: 11, lh: 16 }); K.y += 5;
-    K.labeled(persp ? 'The fresh perspective' : 'Its flaw is its luck', c.hook, A);
+    K.labeled(persp ? 'Its flaw, its lesson' : 'Its flaw is its luck', c.hook, A);
     if (job.quoteSig && job.quoteSig.text) K.box('Lucky words  ·  signature quote', '"' + job.quoteSig.text + '"  -- ' + c.name + ', ' + c.nook.name, A, { size: 13, style: 'bold' });
 
     K.sectionHead('Name check', C.orange, 'quick screen, not a trademark search');
@@ -3184,7 +3219,7 @@ clear = no notable match found. similar = it echoes a known line (same key words
   }
 
 
-  $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${n.short}</small></button>`).join('');
+  $('nookGrid').innerHTML = NOOKS.map(n => `<button class="nook-btn" type="button" data-code="${n.code}"><span class="code">${n.code}</span>${n.emoji} ${n.name}<small>${kwBolt(n, 11)} ${n.short}</small></button>`).join('');
   document.querySelectorAll('#nookGrid .nook-btn').forEach(b => b.addEventListener('click', () => setNook(state.nook === b.dataset.code ? '' : b.dataset.code)));
   $('nookAny').addEventListener('click', () => setNook(''));
   document.querySelectorAll('.opt-card').forEach(card => {
